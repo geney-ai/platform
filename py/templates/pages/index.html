@@ -1,0 +1,76 @@
+{% from "components/cards.html" import feature_card %}
+
+<!-- Hero Section -->
+<section class="min-h-screen flex items-center py-12">
+    <div class="uk-container">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+                <h1 class="text-5xl font-bold mb-6">
+                    Build <span class="gradient-text">faster</span>
+                </h1>
+                <p class="text-xl text-muted-foreground mb-8">
+                    A modern, full-stack Python application template with authentication, database integration, and a clean UI.
+                </p>
+                <div class="flex gap-4">
+                    <a href="/app/dashboard" class="uk-button uk-button-primary flex items-center">
+                        Get Started
+                        <uk-icon icon="arrow-right" class="ml-2"></uk-icon>
+                    </a>
+                    <a href="#features" class="uk-button uk-button-default" uk-scroll>
+                        Learn More
+                    </a>
+                </div>
+            </div>
+            <div class="text-center">
+                <img src="/static/icon.svg" alt="generic" class="mx-auto w-full" style="max-width: 500px; height: 500px; object-fit: contain;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-20 bg-muted">
+    <div class="uk-container">
+        <h2 class="text-3xl font-bold text-center mb-4">Why generic?</h2>
+        <p class="text-xl text-center text-muted-foreground mb-12">Everything you need to build modern Python web applications</p>
+        
+        <div class="grid gap-6 md:grid-cols-3">
+            <div class="text-center">
+                {{ feature_card(
+                    title="Lightning Fast",
+                    description="Built with performance in mind. Async Python backend with modern frontend tools.",
+                    icon="bolt",
+                    badge="Fast"
+                ) }}
+            </div>
+            <div class="text-center">
+                {{ feature_card(
+                    title="Secure by Default", 
+                    description="Authentication, authorization, and security best practices built in from the start.",
+                    icon="lock",
+                    badge="Secure"
+                ) }}
+            </div>
+            <div class="text-center">
+                {{ feature_card(
+                    title="Developer Friendly",
+                    description="Clean architecture, type hints, and modern tooling for a great developer experience.",
+                    icon="code",
+                    badge="Simple"
+                ) }}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-20 bg-foreground text-background">
+    <div class="uk-container text-center">
+        <h2 class="text-3xl font-bold mb-4">Ready to start building?</h2>
+        <p class="text-xl mb-8 opacity-90">Get started with a modern Python web application template.</p>
+        <a href="/app/dashboard" class="uk-button uk-button-primary uk-button-large flex items-center justify-center">
+            Start Free
+            <uk-icon icon="chevron-right" class="ml-2"></uk-icon>
+        </a>
+    </div>
+</section>
