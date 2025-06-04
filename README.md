@@ -1,2 +1,3 @@
 # Generic Templates
-# generic
+
+Generic app boilerplate for your next okay idea

@@ -1,25 +1,18 @@
 import winston from "winston";
-import { Logtail } from "@logtail/node";
-import { LogtailTransport } from "@logtail/winston";
 
-const { combine, timestamp, json, errors } = winston.format;
+const { combine, timestamp } = winston.format;
 
 import { prettyJson } from "./utils";
 
 export type Logger = winston.Logger;
 
 export function createLogger({
-  sourceToken = undefined,
   level = "info",
-  vercelEnv = undefined,
+  serviceName = "unknown",
 }: {
-  sourceToken?: string;
-  level?: string;
-  vercelEnv?: string;
+  level?: "error" | "warn" | "info" | "debug";
+  serviceName?: string;
 }) {
-  // Create logtail instance if sourceToken is provided
-  const logtail = sourceToken ? new Logtail(sourceToken) : null;
-
   // Initialize transports array
   const transports: winston.transport[] = [
     // Console transport with pretty print
@@ -33,27 +26,11 @@ export function createLogger({
     }),
   ];
 
-  // Add Logtail transport if sourceToken is provided and we're not in browser
-  // @ts-expect-error -- we probably shouldnt be doing jank window stuff here
-  if (typeof window === "undefined" && sourceToken && logtail) {
-    transports.push(
-      new LogtailTransport(logtail, {
-        format: combine(
-          json(),
-          timestamp({
-            format: "YYYY-MM-DD hh:mm:ss.SSS A",
-          }),
-          errors({ stack: true }),
-        ),
-      }),
-    );
-  }
-
   return winston.createLogger({
     level,
     transports,
     defaultMeta: {
-      vercelEnv,
+      serviceName,
     },
   });
 }

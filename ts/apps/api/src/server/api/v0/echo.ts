@@ -1,7 +1,6 @@
-import { Request, Response } from "express";
 import { z } from "zod";
 
-import { ServerError } from "@/server/error";
+import { createHandler } from "@repo/http-api";
 
 export const EchoRequestSchema = z.any();
 
@@ -11,11 +10,12 @@ export const EchoResponseSchema = z.any();
 
 export type EchoResponse = z.infer<typeof EchoResponseSchema>;
 
-export async function handler(req: Request, res: Response) {
-  try {
-    const request = EchoRequestSchema.parse(req.body);
-    return res.json(request);
-  } catch (error: Error | unknown) {
-    ServerError.from(error).send(res);
-  }
-}
+export const handler = createHandler({
+  requestSchema: EchoRequestSchema,
+  responseSchema: EchoResponseSchema,
+  handler: async ({ body }: { body: EchoRequest }) => {
+    return {
+      ...body,
+    };
+  },
+});

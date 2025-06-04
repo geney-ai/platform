@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from src.database.models import User, UserModel
 from src.logger import Logger
 from src.server.deps import require_logged_in_user, logger
-from src.server.handlers.base import ComponentResponseHandler
+from src.server.handlers.component import ComponentResponseHandler
 
 
 # Handler instance - only returns components, never full pages

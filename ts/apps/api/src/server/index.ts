@@ -2,7 +2,6 @@ import express, { Application } from "express";
 import { json } from "body-parser";
 import * as api from "./api";
 import * as health from "./health";
-import { authMiddleware } from "@/server/middleware/auth";
 import { config } from "@/config";
 const app: Application = express();
 
@@ -16,11 +15,11 @@ app.use(json());
 if (config.server.basePath) {
   const _router = express.Router();
   _router.use(STATUS_PATH, health.router);
-  _router.use(API_PATH, authMiddleware, api.router);
+  _router.use(API_PATH, api.router);
   app.use(config.server.basePath, _router);
 } else {
   app.use(STATUS_PATH, health.router);
-  app.use(API_PATH, authMiddleware, api.router);
+  app.use(API_PATH, api.router);
 }
 
 export default app;

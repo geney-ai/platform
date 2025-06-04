@@ -1,5 +1,7 @@
-import { Request, Response } from "express";
-import { ServerError, ServerErrors } from "@/server/error";
+import { z } from "zod";
+
+import { createHandler } from "@repo/http-api";
+
 import pkg from "../../../package.json";
 
 interface PackageJson {
@@ -7,22 +9,23 @@ interface PackageJson {
   [key: string]: unknown;
 }
 
-export const handler = async (req: Request, res: Response) => {
-  try {
-    res.json({
+export const handler = createHandler({
+  responseSchema: z.object({
+    status: z.literal("ok"),
+    timestamp: z.string(),
+    node_version: z.string(),
+    platform: z.string(),
+    arch: z.string(),
+    version: z.string(),
+  }),
+  handler: async () => {
+    return {
       status: "ok",
       timestamp: new Date().toISOString(),
       node_version: process.version,
       platform: process.platform,
       arch: process.arch,
       version: (pkg as PackageJson).version,
-    });
-  } catch (error) {
-    const e = error instanceof Error ? error : new Error(String(error));
-    const serverError = new ServerError({
-      error: ServerErrors.ServiceUnavailable,
-      cause: e,
-    });
-    serverError.send(res);
-  }
-};
+    };
+  },
+});

@@ -1,5 +1,14 @@
-import { Request, Response } from "express";
+import { z } from "zod";
 
-export const handler = (req: Request, res: Response) => {
-  res.json({ status: "ok" });
-};
+import { createHandler } from "@repo/http-api";
+
+export const handler = createHandler({
+  responseSchema: z.object({
+    status: z.literal("ok"),
+  }),
+  handler: async () => {
+    return {
+      status: "ok",
+    };
+  },
+});

@@ -40,6 +40,9 @@ COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=pruner /app/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=pruner /app/out/json/ .
 
+# copy .pnpmfile.cjs to ensure lockfile checksum matches
+COPY --from=pruner /app/.pnpmfile.cjs ./.pnpmfile.cjs
+
 # install dependencies
 RUN --mount=type=cache,id=pnpm,target=~/.pnpm-store pnpm install --frozen-lockfile
 

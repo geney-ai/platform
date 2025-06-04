@@ -24,12 +24,9 @@
   "scripts": {
     "build": "bunchee src/index.ts",
     "dev": "bunchee src/index.ts --watch",
-    "lint": "eslint src/",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@logtail/node": "^0.4.21",
-    "@logtail/winston": "^0.4.21",
     "chalk": "^4.1.2",
     "winston": "^3.13.0"
   },

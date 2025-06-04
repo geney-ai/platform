@@ -6,16 +6,11 @@
 source "$(dirname "$0")/utils.sh"
 
 # Parse arguments
-QUICK_MODE=false
 FIX_MODE=false
 VERBOSE=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        -q|--quick)
-            QUICK_MODE=true
-            shift
-            ;;
         -f|--fix)
             FIX_MODE=true
             shift
@@ -82,12 +77,6 @@ run_check() {
     return $result
 }
 
-# Main execution
-echo -e "${CYAN}TPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPW${NC}"
-echo -e "${CYAN}Q       Code Quality Check Suite         Q${NC}"
-echo -e "${CYAN}ZPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP]${NC}"
-echo
-
 # Type checking
 if $FIX_MODE; then
     echo -e "${YELLOW}Note: Type checking has no auto-fix mode${NC}"
@@ -106,21 +95,6 @@ if $FIX_MODE; then
     run_check "Formatting (Black)" "$PROJECT_ROOT/bin/fmt.sh" ""
 else
     run_check "Formatting (Black)" "$PROJECT_ROOT/bin/fmt.sh" "--check"
-fi
-
-# Tests (skip in quick mode)
-if ! $QUICK_MODE; then
-    # Check if POSTGRES_URL is set or if postgres is running
-    if [ -n "$POSTGRES_URL" ] || $PROJECT_ROOT/bin/postgres.sh endpoint >/dev/null 2>&1; then
-        run_check "Tests (Pytest)" "$PROJECT_ROOT/bin/test.sh" ""
-    else
-        echo -e "${YELLOW}  Skipping tests - PostgreSQL not available${NC}"
-        echo -e "${YELLOW}  Start PostgreSQL with: ./bin/postgres.sh run${NC}"
-        echo
-    fi
-else
-    echo -e "${YELLOW}  Skipping tests in quick mode${NC}"
-    echo
 fi
 
 # Final summary

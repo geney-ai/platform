@@ -9,8 +9,8 @@ from src.server.deps import logger, async_db
 router = APIRouter()
 
 
-@router.get("/healthz")
-async def health(
+@router.get("/readyz")
+async def ready(
     logger: Logger = Depends(logger),
     db: AsyncSession = Depends(async_db),
 ):
@@ -22,9 +22,8 @@ async def health(
         raise HTTPException(status_code=500, detail="health check failed")
 
 
-# TODO: real readyz
-@router.get("/readyz")
-async def ready(
+@router.get("/livez")
+async def live(
     logger: Logger = Depends(logger),
 ):
     return {"status": "ok"}
