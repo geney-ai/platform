@@ -8,11 +8,11 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
     "test": "turbo run test",
-    "fmt": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "fmt:check": "prettier --check \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "fmt": "turbo run fmt",
+    "fmt:check": "turbo run fmt:check",
+    "check-types": "turbo run check-types",
+    "clean": "turbo run clean"
   },
   "devDependencies": {
     "prettier": "^3.5.3",

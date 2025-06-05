@@ -10,12 +10,12 @@ page = PageResponse(
 
 async def handler(request: Request):
     """Login page handler
-    
+
     Simple login page with SSO options
-    
+
     Args:
         request: The incoming request
-        
+
     Returns:
         HTMLResponse with full layout or just content for HTMX
     """

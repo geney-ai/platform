@@ -7,6 +7,7 @@ from typing import Any, Dict
 
 templates = Jinja2Templates(directory="templates")
 
+
 class ComponentResponseHandler:
     """Handler that returns JSON or HTML components (never full pages)"""
 

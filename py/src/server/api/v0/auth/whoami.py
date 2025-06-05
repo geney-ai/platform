@@ -1,7 +1,6 @@
 from fastapi import Request, Depends
-from pydantic import BaseModel
 
-from src.database.models import User, UserModel
+from src.database.models import User
 from src.logger import Logger
 from src.server.deps import require_logged_in_user, logger
 from src.server.handlers.component import ComponentResponseHandler

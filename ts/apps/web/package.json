@@ -7,6 +7,8 @@
     "dev": "VITE_API_URL=http://localhost:3001 vite",
     "build": "tsc && vite build",
     "check-types": "tsc --noEmit",
+    "fmt": "prettier --write \"src/**/*.{ts,tsx}\" --config ../../.prettierrc",
+    "fmt:check": "prettier --check \"src/**/*.{ts,tsx}\" --config ../../.prettierrc",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -58,7 +60,6 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^4.3.1",

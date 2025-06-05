@@ -17,6 +17,19 @@
         "build/**"
       ]
     },
+    "fmt": {
+      "dependsOn": [
+        "^fmt"
+      ]
+    },
+    "fmt:check": {  
+      "dependsOn": [
+        "^fmt:check"
+      ]
+    },
+    "clean": {
+      "cache": true
+    },
     "install": {
       "cache": true
     },

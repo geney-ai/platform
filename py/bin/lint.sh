@@ -17,22 +17,12 @@ if $FIX_MODE; then
     echo "Fixing linting issues..."
     uvx ruff check "$PROJECT_ROOT/src" "$PROJECT_ROOT/tests" --fix
     check_result "Ruff auto-fix"
-    
-    echo
-    echo "Formatting with ruff..."
-    uvx ruff format "$PROJECT_ROOT/src" "$PROJECT_ROOT/tests"
-    check_result "Ruff format"
 else
     print_header "Running Ruff Linter"
     
     echo "Checking for linting issues..."
     uvx ruff check "$PROJECT_ROOT/src" "$PROJECT_ROOT/tests"
     check_result "Ruff check"
-    
-    echo
-    echo "Checking formatting..."
-    uvx ruff format "$PROJECT_ROOT/src" "$PROJECT_ROOT/tests" --check
-    check_result "Ruff format check"
 fi
 
 # Final summary

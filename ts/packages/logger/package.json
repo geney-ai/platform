@@ -24,6 +24,8 @@
   "scripts": {
     "build": "bunchee src/index.ts",
     "dev": "bunchee src/index.ts --watch",
+    "fmt": "prettier --write \"src/**/*.ts\" --config ../../.prettierrc",
+    "fmt:check": "prettier --check \"src/**/*.ts\" --config ../../.prettierrc",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
@@ -31,7 +33,6 @@
     "winston": "^3.13.0"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.13.9",
     "bunchee": "^6.4.0",

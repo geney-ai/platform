@@ -1,0 +1,18 @@
+{
+  "extends": "@repo/typescript-config/base.json",
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
+  "compilerOptions": {
+    // ES2015 + DOM so we can use dom apis
+    "lib": ["ES2015", "DOM"],
+    "outDir": "./dist",
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    // set the next plugin so we can source this in
+    //  mothership
+    "plugins": [{ "name": "next" }]
+  },
+}

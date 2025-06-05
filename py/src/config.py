@@ -41,7 +41,7 @@ class Secrets:
         def mask_secret(secret: str | None) -> str:
             secret_str = str(secret)
             return f"{secret_str[:3]}...{secret_str[-3:]}"
-        
+
         return f"Secrets(service_secret={mask_secret(self.service_secret)}, google_client_id={self.google_client_id}, google_client_secret={mask_secret(self.google_client_secret)})"
 
     def __init__(self):
@@ -56,7 +56,7 @@ class Secrets:
                 ConfigExceptionType.invalid_env_var,
                 f"SERVICE_SECRET environment variable must be at least {MIN_SECRET_LENGTH} characters long",
             )
-        
+
         self.google_client_id = empty_to_none("GOOGLE_CLIENT_ID")
         self.google_client_secret = empty_to_none("GOOGLE_CLIENT_SECRET")
 

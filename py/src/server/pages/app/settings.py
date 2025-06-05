@@ -10,12 +10,12 @@ page = PageResponse(
 
 async def handler(request: Request):
     """Settings page handler
-    
+
     User settings and preferences
-    
+
     Args:
         request: The incoming request
-        
+
     Returns:
         HTMLResponse with full layout or just content for HTMX
     """
