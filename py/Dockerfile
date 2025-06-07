@@ -39,7 +39,6 @@ COPY templates/ ./templates/
 # Create a startup script
 # TODO: add migration back in
 RUN echo '#!/bin/bash' > /app/start.sh && \
-    echo 'export DATABASE_PATH=/db/app.db' >> /app/start.sh && \
     echo '/app/bin/migrate.sh' >> /app/start.sh && \
     echo '/app/bin/run.sh' >> /app/start.sh && \
     chmod +x /app/start.sh

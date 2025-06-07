@@ -23,7 +23,6 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: $0 [options]"
             echo ""
             echo "Options:"
-            echo "  -q, --quick    Skip slow checks (like tests)"
             echo "  -f, --fix      Auto-fix issues where possible"
             echo "  -v, --verbose  Show detailed output"
             echo "  -h, --help     Show this help message"
@@ -32,7 +31,7 @@ while [[ $# -gt 0 ]]; do
             echo "  - Type checking (mypy)"
             echo "  - Linting (ruff)"
             echo "  - Formatting (black)"
-            echo "  - Tests (pytest) - skipped in quick mode"
+            echo "  - Tests (pytest)"
             exit 0
             ;;
         *)
@@ -97,14 +96,14 @@ else
     run_check "Formatting (Black)" "$PROJECT_ROOT/bin/fmt.sh" "--check"
 fi
 
+# Tests
+run_check "Tests (Pytest)" "$PROJECT_ROOT/bin/test.sh" ""
+
 # Final summary
 print_header "Summary"
 
 if [ $OVERALL_SUCCESS -eq 0 ]; then
     echo -e "${GREEN} All checks passed!${NC}"
-    if $QUICK_MODE; then
-        echo -e "${YELLOW}   (Note: tests were skipped in quick mode)${NC}"
-    fi
 else
     echo -e "${RED}L Some checks failed${NC}"
     echo

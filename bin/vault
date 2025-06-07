@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+# Vault wrapper script - injects HCP Vault secrets into wrapped commands
+# Usage: vault <app-name> -- <command> [args...]
+
+set -e
+
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Source the global configuration
+source "$REPO_ROOT/config.sh"
+
+# Function to show usage
+usage() {
+    echo "HCP Vault wrapper - inject secrets into commands"
+    echo ""
+    echo "Usage: $0 <app-name> -- <command> [args...]"
+    echo ""
+    echo "Arguments:"
+    echo "  app-name    - The HCP Vault app name to use for secrets"
+    echo "  command     - The command to run with injected secrets"
+    echo ""
+    echo "Examples:"
+    echo "  $0 generic-dev -- env                    # Show all env vars from generic-dev app"
+    echo "  $0 my-app-staging -- python script.py    # Run Python script with my-app-staging secrets"
+    echo "  $0 prod-secrets -- terraform plan         # Run terraform with prod-secrets app"
+    echo ""
+    echo "Project ID is read from: $REPO_ROOT/config.yaml"
+    exit 1
+}
+
+# Check minimum arguments
+if [[ $# -lt 3 ]]; then
+    usage
+fi
+
+VAULT_APP="$1"
+shift
+
+# Check for -- separator
+if [[ "$1" != "--" ]]; then
+    echo "Error: Missing '--' separator"
+    echo ""
+    usage
+fi
+shift
+
+# Check if project ID is configured
+if [[ -z "$VAULT_PROJECT_ID" || "$VAULT_PROJECT_ID" == "null" ]]; then
+    echo "Error: HCP Vault project ID not configured"
+    echo "Please update config.yaml with your HCP Vault project ID"
+    exit 1
+fi
+
+# Run command with HCP Vault secrets
+echo "Injecting secrets from HCP Vault app: $VAULT_APP"
+exec hcp vault-secrets run --project="${VAULT_PROJECT_ID}" --app="${VAULT_APP}" -- "$@"

@@ -1,10 +1,16 @@
 export type { Logger } from "winston";
 
-import { BaseObservabilityConfig } from "@/types";
+import { BaseObservabilityConfig } from "@/base-types";
 
 export interface LoggingConfig extends BaseObservabilityConfig {
   level?: string;
   format?: "json" | "pretty";
+  instrument?: boolean;
+
+  // Logtail configuration
+  logtail?: {
+    sourceToken: string;
+  };
 
   // Grafana Loki configuration
   loki?: {
@@ -13,5 +19,3 @@ export interface LoggingConfig extends BaseObservabilityConfig {
     password?: string;
   };
 }
-
-export type LogLevel = "error" | "warn" | "info" | "http" | "verbose" | "debug";

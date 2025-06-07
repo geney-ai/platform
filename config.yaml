@@ -1,0 +1,28 @@
+# Global repository configuration
+# This file contains configuration shared across all projects
+
+# Application name
+app_name: generic
+
+# HCP Vault configuration
+vault:
+  # Organization ID from HCP
+  # TODO: Replace with your actual organization ID
+  organization_id: your-org-id
+  # Project ID from HCP
+  # TODO: Replace with your actual project ID
+  project_id: a9087abb-c3b8-405c-b77f-f45e9bed9d09
+  # App names for different environments
+  apps:
+    dev: generic-dev
+    staging: generic-staging
+    production: generic-prod
+
+# Container configurations (shared across projects)
+container:
+  postgres_image: postgres:16-alpine
+
+# Development server configuration
+dev_server:
+  port: 8000
+  debug: true

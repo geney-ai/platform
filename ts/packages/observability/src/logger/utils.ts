@@ -1,3 +1,4 @@
+import { trace } from "@opentelemetry/api";
 import winston from "winston";
 
 export * from "./types";
@@ -18,6 +19,17 @@ export const prettyFormat = printf(({ level, message, timestamp, ...rest }) => {
   }
 
   return output;
+});
+
+export const traceFormat = winston.format((info) => {
+  const span = trace.getActiveSpan();
+  if (span) {
+    const context = span.spanContext();
+    info.traceId = context.traceId;
+    info.spanId = context.spanId;
+    info.traceFlags = context.traceFlags;
+  }
+  return info;
 });
 
 export const isBrowser = typeof window !== "undefined";

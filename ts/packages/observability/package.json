@@ -16,23 +16,34 @@
         "types": "./dist/index.d.ts",
         "default": "./dist/index.cjs"
       }
+    },
+    "./types": {
+      "import": {
+        "types": "./dist/types.d.ts",
+        "default": "./dist/types.mjs"
+      },
+      "require": {
+        "types": "./dist/types.d.ts",
+        "default": "./dist/types.cjs"
+      }
     }
   },
   "scripts": {
     "build": "bunchee",
     "dev": "bunchee --watch",
-    "type-check": "tsc --noEmit",
+    "check-types": "tsc --noEmit",
     "test": "echo 'No tests yet'",
     "test:watch": "echo 'No tests yet'",
     "fmt": "prettier --write \"src/**/*.ts\" --config ../../.prettierrc",
-    "fmt:check": "prettier --check \"src/**/*.ts\" --config ../../.prettierrc",
-    "check-types": "tsc --noEmit",
-    "clean": "rm -rf dist node_modules .turbo"
+    "fmt:check": "prettier --check \"src/**/*.ts\" --config ../../.prettierrc"
   },
   "dependencies": {
+    "@logtail/node": "^0.4.21",
+    "@logtail/winston": "^0.4.21",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/auto-instrumentations-node": "^0.60.0",
     "@opentelemetry/context-async-hooks": "^1.24.0",
+    "@opentelemetry/exporter-jaeger": "^2.0.1",
     "@opentelemetry/exporter-trace-otlp-http": "^0.202.0",
     "@opentelemetry/resources": "^2.0.0",
     "@opentelemetry/sdk-node": "^0.202.0",
@@ -47,7 +58,7 @@
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.13.9",
-    "bunchee": "^6.4.0",
+    "bunchee": "^5.5.7",
     "typescript": "^5.8.2"
   }
 }

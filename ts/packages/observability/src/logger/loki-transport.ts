@@ -1,3 +1,4 @@
+import winston from "winston";
 import LokiTransport from "winston-loki";
 import Transport from "winston-transport";
 
@@ -6,12 +7,13 @@ interface LokiConfig {
   username?: string;
   password?: string;
   labels: Record<string, string>;
+  format: winston.Logform.Format;
 }
 
 export function lokiTransport(config: LokiConfig): Transport {
   const { url, username, password, labels } = config;
 
-  return new LokiTransport({
+  const lokiTransport = new LokiTransport({
     host: url,
     basicAuth: username && password ? `${username}:${password}` : undefined,
     labels,
@@ -23,4 +25,8 @@ export function lokiTransport(config: LokiConfig): Transport {
       console.error("[Loki Transport] Connection error:", err);
     },
   });
+
+  lokiTransport.format = config.format;
+
+  return lokiTransport;
 }

@@ -2,7 +2,7 @@
 
 usage() {
     cat <<EOF
-Usage: $(basename $0) COMMAND SERVICE_NAME [options]
+Usage: $(basename $0) COMMAND [options]
 
 Commands:
     build         Build the docker container
@@ -27,11 +27,10 @@ Environment variables required for push (if not using -I):
     DO_TOKEN
 
 Example:
-    $(basename $0) build web
-    $(basename $0) build web -p linux/amd64
-    $(basename $0) run web
-    $(basename $0) run web -p 8080:80
-    $(basename $0) push web 
+    $(basename $0) build 
+    $(basename $0) build -p linux/amd64
+    $(basename $0) run -p 8080:80
+    $(basename $0) push 
 
 Note:
     Use -p linux/amd64 when building images for deployment.
@@ -44,19 +43,19 @@ EOF
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 SKIP_BRANCH_CHECK=0
 ALLOW_DIRTY=0
-USE_INFISICAL=0
+SERVICE_NAME="app"
 TAG_AS_STAGING_LATEST=0
 FORCE_LATEST=0
 
 validate_platform() {
     # Check if image exists
-    if ! docker image inspect "repo/$SERVICE_NAME:latest" >/dev/null 2>&1; then
-        echo "Error: Image repo/$SERVICE_NAME:latest not found"
+    if ! docker image inspect "generic-py/$SERVICE_NAME:latest" >/dev/null 2>&1; then
+        echo "Error: Image generic-py/$SERVICE_NAME:latest not found"
         exit 1
     fi
 
     # Check image platform
-    PLATFORM=$(docker image inspect "repo/$SERVICE_NAME:latest" --format '{{.Os}}/{{.Architecture}}')
+    PLATFORM=$(docker image inspect "generic-py/$SERVICE_NAME:latest" --format '{{.Os}}/{{.Architecture}}')
 
     # For deployment to AWS Fargate, we need to ensure the image is linux/amd64
     if [[ "$COMMAND" == "deploy" ]]; then
@@ -145,15 +144,15 @@ push() {
     fi
 
     # Tag with environment name and commit hash
-    if ! docker tag repo/$SERVICE_NAME:latest $REPOSITORY_URL:$ENV_NAME-$COMMIT_HASH ||
-        ! docker tag repo/$SERVICE_NAME:latest $REPOSITORY_URL:$ENV_NAME-latest; then
+    if ! docker tag generic-py/$SERVICE_NAME:latest $REPOSITORY_URL:$ENV_NAME-$COMMIT_HASH ||
+        ! docker tag generic-py/$SERVICE_NAME:latest $REPOSITORY_URL:$ENV_NAME-latest; then
         echo "Error: Failed to tag images"
         exit 1
     fi
 
     # For main/production or when force latest is enabled, tag as 'latest'
     if [[ "$ENV_NAME" == "production" ]] || [[ "$FORCE_LATEST" == 1 ]]; then
-        if ! docker tag repo/$SERVICE_NAME:latest $REPOSITORY_URL:latest; then
+        if ! docker tag generic-py/$SERVICE_NAME:latest $REPOSITORY_URL:latest; then
             echo "Error: Failed to tag as latest"
             exit 1
         fi
@@ -164,7 +163,7 @@ push() {
 
     # For custom branches, optionally tag as staging-latest
     if [[ "$TAG_AS_STAGING_LATEST" == 1 ]] && [[ ! "$SAFE_BRANCH_NAME" =~ ^(main|dev)$ ]]; then
-        if ! docker tag repo/$SERVICE_NAME:latest $REPOSITORY_URL:staging-latest; then
+        if ! docker tag generic-py/$SERVICE_NAME:latest $REPOSITORY_URL:staging-latest; then
             echo "Error: Failed to tag as staging-latest"
             exit 1
         fi
@@ -215,8 +214,7 @@ push() {
 
 # Main command processing
 COMMAND=$1
-SERVICE_NAME=$2
-shift 2
+shift 1
 
 case $COMMAND in
 build)
@@ -234,9 +232,9 @@ build)
     echo "Building docker container for $SERVICE_NAME..."
     if [ -n "$PLATFORM" ]; then
         echo "Using platform: $PLATFORM"
-        docker build $PLATFORM -t repo/$SERVICE_NAME:latest -f apps/$SERVICE_NAME/Dockerfile .
+        docker build $PLATFORM -t generic-py/$SERVICE_NAME:latest -f Dockerfile .
     else
-        docker build -t repo/$SERVICE_NAME:latest -f apps/$SERVICE_NAME/Dockerfile .
+        docker build -t generic-py/$SERVICE_NAME:latest -f Dockerfile .
     fi
     ;;
 run)
@@ -254,9 +252,9 @@ run)
     echo "Running docker container for $SERVICE_NAME..."
     if [ -n "$PORT_MAPPING" ]; then
         echo "Using port mapping: $PORT_MAPPING"
-        docker run -it --rm $PORT_MAPPING repo/$SERVICE_NAME:latest
+        docker run -it --rm $PORT_MAPPING generic-py/$SERVICE_NAME:latest
     else
-        docker run -it --rm repo/$SERVICE_NAME:latest
+        docker run -it --rm generic-py/$SERVICE_NAME:latest
     fi
     ;;
 push)

@@ -27,14 +27,19 @@ variable "do_token" {
   sensitive   = true
 }
 
-variable "registry_name" {
-  description = "Name of the container registry"
-  type        = string
-  default     = "my-registry"
-}
-
-variable "region" {
-  description = "DigitalOcean region for the registry"
-  type        = string
-  default     = "nyc3"
+variable "registries" {
+  description = "Map of registries to create with their configurations"
+  type = map(object({
+    region               = string
+    subscription_tier    = string
+    repositories         = list(string)
+    lifecycle_policy     = optional(string)
+  }))
+  default = {
+    "main-registry" = {
+      region            = "nyc3"
+      subscription_tier = "basic"
+      repositories      = ["api", "web", "worker"]
+    }
+  }
 }

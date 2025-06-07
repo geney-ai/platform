@@ -1,8 +1,2 @@
-export type ServiceEnvironment = "development" | "staging" | "production";
-
-export interface BaseObservabilityConfig {
-  serviceName: string;
-  serviceVersion?: string;
-  serviceEnvironment?: ServiceEnvironment;
-  resourceAttributes?: Record<string, any>;
-}
+// This file exports only types that can be safely used in both client and server environments
+export { Environment, LogLevel } from "./base-types";
