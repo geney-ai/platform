@@ -36,10 +36,10 @@ variable "registries" {
     lifecycle_policy     = optional(string)
   }))
   default = {
-    "main-registry" = {
+    "generic-registry" = {
       region            = "nyc3"
       subscription_tier = "basic"
-      repositories      = ["api", "web", "worker"]
+      repositories      = ["generic-ts-web"]
     }
   }
 }
