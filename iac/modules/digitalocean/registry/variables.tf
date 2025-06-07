@@ -7,3 +7,9 @@ variable "registries" {
     lifecycle_policy     = optional(string)
   }))
 }
+
+variable "do_token" {
+  description = "DigitalOcean API token"
+  type        = string
+  sensitive   = true
+}
