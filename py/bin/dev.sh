@@ -3,6 +3,7 @@
 # Source configuration
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$SCRIPT_DIR/config.sh"
+source "$SCRIPT_DIR/../../bin/vault"
 
 # start db flag
 START_DB=false
@@ -32,8 +33,8 @@ done
 
 # Set environment variables
 export DEV_SERVER_HOST=localhost
-export HOST_NAME=http://${DEV_SERVER_HOST}:${DEV_SERVER_PORT}
-export LISTEN_ADDRESS=${DEV_SERVER_HOST}
+export HOST_NAME=http://localhost:${DEV_SERVER_PORT}
+export LISTEN_ADDRESS=0.0.0.0
 export LISTEN_PORT=${DEV_SERVER_PORT}
 export SERVICE_SECRET='not-a-very-secret-secret'
 export DEBUG=True
@@ -50,7 +51,8 @@ fi
 export POSTGRES_URL=$(./bin/postgres.sh endpoint)
 
 # Start the main application
-hcp vault-secrets run --project=${VAULT_PROJECT_ID} --app=${VAULT_APP_DEV} -- uv run src/__main__.py
+export VAULT_APP=${VAULT_APP_DEV}
+run_with_vault uv run src/__main__.py
 
 # Exit the script
 exit 0

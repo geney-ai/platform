@@ -1,20 +1,38 @@
-# AWS Infrastructure Module
-# 
-module "aws" {
-  source = "../../modules/aws"
-  count  = var.aws_config != null ? 1 : 0
+# DigitalOcean Infrastructure Module
 
-  # Core configuration from common
+# random prefix for the project
+resource "random_string" "project_prefix" {
+  length  = 4
+  special = false
+}
+
+# Project
+module "digitalocean_project" {
+  source = "../../modules/digitalocean/project"
+
+  name = "${local.project_name}-${var.environment}-${random_string.project_prefix.result}-project"
+  description = "Project for ${local.project_name} ${var.environment}"
   environment = var.environment
-  aws_region  = var.aws_config.aws_region
-  vpc_cidr    = var.aws_config.vpc_cidr
+  resources = [module.digitalocean_droplet.urn]
+}
 
-  # Service configurations for this environment
-  service_configurations = var.aws_config.service_configurations
 
-  tags = {
-    Environment = var.environment
-    ManagedBy   = "terraform"
-    Project     = local.project_name
-  }
+# SSH key which will get access to the droplet
+module "digitalocean_ssh_key" {
+  source = "../../modules/digitalocean/ssh_key"
+
+  name = "${local.project_name}-${var.environment}-${random_string.project_prefix.result}-ssh-key"
+}
+
+# Droplet
+module "digitalocean_droplet" {
+  source = "../../modules/digitalocean/droplet"
+
+  name = "${local.project_name}-${var.environment}-${random_string.project_prefix.result}-droplet"
+
+  region = var.digitalocean.droplet.region
+  tags   = ["${local.project_name}-${var.environment}"]
+
+  # SSH configuration
+  ssh_keys        = [module.digitalocean_ssh_key.id]
 }

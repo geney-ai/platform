@@ -1,9 +1,11 @@
-terraform {
-  backend "s3" {
-    bucket         = "example-turbo-ts-tf-state"
-    key            = "production/terraform.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
-    dynamodb_table = "example-turbo-ts-tf-state-lock"
-  }
+terraform { 
+  cloud { 
+    # TODO (replace with your own organization)
+    organization = "krondor-corp" 
+
+    workspaces { 
+      # TODO (setup production workspace in your own organization for said project)
+      name = "production" 
+    } 
+  } 
 }

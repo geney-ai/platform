@@ -13,8 +13,6 @@ resource "digitalocean_droplet" "main" {
     ["dockerized-service"]
   )
   
-  user_data = file("${path.module}/user-data.sh")
-  
   monitoring         = var.monitoring
   backups           = var.backups
   ipv6              = var.ipv6

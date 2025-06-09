@@ -240,9 +240,9 @@ importers:
       '@quotientjs/error':
         specifier: ^0.1.0
         version: 0.1.1
-      '@repo/logger':
+      '@repo/observability':
         specifier: workspace:*
-        version: link:../logger
+        version: link:../observability
       express:
         specifier: ^4.21.2
         version: 4.21.2
@@ -259,31 +259,6 @@ importers:
       '@types/express':
         specifier: ^4.17.21
         version: 4.17.21
-      '@types/node':
-        specifier: ^22.13.9
-        version: 22.13.10
-      bunchee:
-        specifier: ^6.4.0
-        version: 6.4.0(typescript@5.8.2)
-      eslint:
-        specifier: ^9.22.0
-        version: 9.22.0(jiti@1.21.7)
-      typescript:
-        specifier: 5.8.2
-        version: 5.8.2
-
-  packages/logger:
-    dependencies:
-      chalk:
-        specifier: ^4.1.2
-        version: 4.1.2
-      winston:
-        specifier: ^3.13.0
-        version: 3.17.0
-    devDependencies:
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
       '@types/node':
         specifier: ^22.13.9
         version: 22.13.10

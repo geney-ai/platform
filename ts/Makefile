@@ -5,6 +5,8 @@ help: ## Show this help message
 	@echo 'Available targets:'
 	@awk 'BEGIN {FS = ":.*##"; printf "\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  %-20s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 
+
+
 .PHONY: install
 install: ## Install dependencies
 	@pnpm install
@@ -33,8 +35,19 @@ fmt-check: ## Check code formatting
 types: ## Check TypeScript types
 	@pnpm check-types
 
+.PHONY: lint
+lint: ## Run linter
+	@echo "no lint for ts"
+
 .PHONY: check
 check: fmt-check types test ## Run all checks
+
+.PHONY: docker-build
+docker-build: ## Build Docker images
+	@$(MAKE) -j2 docker-build-api docker-build-web
+
+docker-build-%: ## Build Docker image for the given service
+	@./bin/docker build $(@:docker-build-%=%)
 
 .PHONY: clean
 clean: ## Clean build artifacts and dependencies
