@@ -1,0 +1,47 @@
+name: Lint 🧹
+
+on:
+  workflow_call:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  py-build:
+    name: py-build 🐍
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+
+    - name: Set up Python
+      run: uv python install
+        
+    - name: Install dependencies
+      run: |
+        make install-py
+        
+    - name: Run build checks
+      run: |
+        make build-py
+
+  ts-build:
+    name: ts-build 🐦
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9
+        run_install: true
+
+    - name: Install dependencies
+      run: make install-ts
+
+    - name: Run build checks
+      run: make build-ts

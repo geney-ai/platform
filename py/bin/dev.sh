@@ -48,6 +48,7 @@ if [ "$START_DB" = true ]; then
     # Give PostgreSQL a moment to start
     sleep 2
 fi
+
 export POSTGRES_URL=$(./bin/postgres.sh endpoint)
 
 # Start the main application

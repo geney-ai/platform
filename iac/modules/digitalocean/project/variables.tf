@@ -8,12 +8,6 @@ variable "description" {
   type        = string
 }
 
-variable "purpose" {
-  description = "The purpose of the project"
-  type        = string
-  default     = "web application"
-}
-
 variable "environment" {
   description = "Environment name (staging, production, etc.)"
   type        = string

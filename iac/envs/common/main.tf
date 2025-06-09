@@ -36,3 +36,14 @@ module "digitalocean_droplet" {
   # SSH configuration
   ssh_keys        = [module.digitalocean_ssh_key.id]
 }
+
+# Cloudflare DNS
+module "cloudflare_dns" {
+  source = "../../modules/cloudflare/dns"
+
+  zone_id  = local.cloudflare_zone_id
+  droplet_ip   = module.digitalocean_droplet.ipv4_address
+  domain_slugs = ["ts.${local.project_name}", "py.${local.project_name}", "${local.project_name}"]
+  ttl          = var.cloudflare.ttl
+  proxied      = var.cloudflare.proxied
+}

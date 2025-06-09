@@ -1,6 +1,8 @@
 locals {
   # Project-wide constants
   project_name = "generic"
+  # TODO: make this configurable somehow
+  cloudflare_zone_id = "0810426df610d25deabc925b44c87d9b"
 }
 
 variable "environment" {
@@ -21,5 +23,14 @@ variable "digitalocean" {
     droplet = object({
       region = string
     })
+  })
+}
+
+# Cloudflare configuration
+variable "cloudflare" {
+  description = "Configuration for Cloudflare DNS"
+  type = object({
+    ttl          = optional(number, 300)
+    proxied      = optional(bool, false)
   })
 }

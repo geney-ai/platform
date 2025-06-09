@@ -5,6 +5,8 @@ help: ## Show this help message
 	@echo 'Usage: make [target]'
 	@echo ''
 	@echo 'Available targets:'
+	@echo '  check: Check all projects'
+	@echo '  check-%: Check the given project'
 	@echo '  install-%: Install dependencies for the given project'
 	@echo '  build-%: Build the given project'
 	@echo '  test-%: Run tests for the given project'
