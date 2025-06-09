@@ -34,5 +34,5 @@ EOF
 variable "repositories" {
   description = "List of repositories to create"
   type        = list(string)
-  default     = ["generic-ts-web"]
+  default     = ["generic-ts-web", "generic-py"]
 }

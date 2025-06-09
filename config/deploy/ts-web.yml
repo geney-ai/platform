@@ -1,0 +1,37 @@
+# Kamal deploy configuration for TypeScript Web service
+service: generic-ts-web
+
+# NOTE: this must match the name you passed to the container registry module
+# Container image
+image: "<%= ENV['REGISTRY_NAME'] %>/generic-ts-web"
+
+# Deploy to these servers
+servers:
+  web:
+    - "<%= ENV['DROPLET_IP'].strip %>"
+
+# SSH configuration  
+ssh:
+  keys_only: false
+  user: root
+
+# Registry configuration
+registry:
+  server: "<%= ENV['REGISTRY_ENDPOINT'] %>"
+  username: "<%= ENV['DOCKERHUB_USERNAME'] %>"
+  password:
+    - DOCKERHUB_TOKEN
+
+# Builder configuration
+builder:
+  dockerfile: ts/apps/web/Dockerfile
+  context: "ts"
+  arch: amd64
+  cache:
+    type: registry
+
+# Proxy configuration for SSL
+proxy:
+  ssl: true
+  host: ts.generic.krondor.org
+  app_port: 3000
