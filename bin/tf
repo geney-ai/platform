@@ -45,4 +45,5 @@ fi
 # Run terraform using the vault script
 source "$REPO_ROOT/bin/vault"
 VAULT_APP="$TF_VAULT_APP"
+# TODO: remove lock=false
 run_with_vault sh -c "echo $DIGITALOCEAN_TOKEN && cd '$ENV_DIR' && terraform $*"

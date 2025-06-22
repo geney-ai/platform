@@ -1,42 +1,85 @@
 import { Card } from "@/components/ui/card";
-import { Zap, Lock, Code } from "lucide-react";
+import { Globe, Coins, User, Zap, Package, Rocket } from "lucide-react";
 
 export default function Features() {
-  const features = [
+  const useCases = [
+    {
+      icon: <Coins className="h-12 w-12 mx-auto mb-4" />,
+      title: "Client-Side Crypto",
+      description:
+        "Build cryptocurrency applications with TypeScript and modern web APIs.",
+      badge: "Crypto",
+    },
+    {
+      icon: <Globe className="h-12 w-12 mx-auto mb-4" />,
+      title: "Public Websites",
+      description:
+        "Create public-facing websites with Vite, React, and Tailwind CSS.",
+      badge: "Web",
+    },
+    {
+      icon: <User className="h-12 w-12 mx-auto mb-4" />,
+      title: "Portfolios",
+      description:
+        "Build personal portfolios and showcase projects with a clean, responsive design.",
+      badge: "Portfolio",
+    },
+  ];
+
+  const infrastructure = [
     {
       icon: <Zap className="h-12 w-12 mx-auto mb-4" />,
-      title: "Lightning Fast",
+      title: "Turbo Monorepo",
       description:
-        "Built with performance in mind. Modern TypeScript backend with Next.js frontend.",
-      badge: "Fast",
+        "Cached builds and efficient task management across multiple packages.",
+      badge: "Build",
     },
     {
-      icon: <Lock className="h-12 w-12 mx-auto mb-4" />,
-      title: "Secure by Default",
+      icon: <Package className="h-12 w-12 mx-auto mb-4" />,
+      title: "Docker Ready",
       description:
-        "Authentication, authorization, and security best practices built in from the start.",
-      badge: "Secure",
+        "Dockerization patterns and boilerplate for deployment anywhere.",
+      badge: "Deploy",
     },
     {
-      icon: <Code className="h-12 w-12 mx-auto mb-4" />,
-      title: "Developer Friendly",
+      icon: <Rocket className="h-12 w-12 mx-auto mb-4" />,
+      title: "CI/CD Pipeline",
       description:
-        "Clean architecture, type safety, and modern tooling for a great developer experience.",
-      badge: "Simple",
+        "Basic deployment pipeline for shipping updates quickly.",
+      badge: "Ship",
     },
   ];
 
   return (
-    <section id="features" className="py-20 bg-muted">
+    <section id="features" className="py-32 bg-muted">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-4">Why generic?</h2>
-        <p className="text-xl text-center text-muted-foreground mb-12">
-          Everything you need to build modern TypeScript web applications
+        <h2 className="text-4xl font-bold text-center mb-6">Use Cases</h2>
+        <p className="text-xl text-center text-muted-foreground mb-16 max-w-2xl mx-auto">
+          Build client-side applications with TypeScript and Vite
         </p>
-        <div className="grid gap-6 md:grid-cols-3">
-          {features.map((feature, index) => (
+        <div className="grid gap-8 md:grid-cols-3 mb-24">
+          {useCases.map((feature, index) => (
             <div key={index} className="text-center">
-              <Card className="h-full p-6 relative">
+              <Card className="h-full p-8 relative hover:shadow-lg transition-shadow">
+                <span className="absolute top-2 right-2 text-xs bg-muted px-2 py-1 rounded">
+                  {feature.badge}
+                </span>
+                {feature.icon}
+                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground">{feature.description}</p>
+              </Card>
+            </div>
+          ))}
+        </div>
+        
+        <h2 className="text-4xl font-bold text-center mb-6">Infrastructure</h2>
+        <p className="text-xl text-center text-muted-foreground mb-16 max-w-2xl mx-auto">
+          Built-in tools for development and deployment
+        </p>
+        <div className="grid gap-8 md:grid-cols-3">
+          {infrastructure.map((feature, index) => (
+            <div key={index} className="text-center">
+              <Card className="h-full p-8 relative hover:shadow-lg transition-shadow">
                 <span className="absolute top-2 right-2 text-xs bg-muted px-2 py-1 rounded">
                   {feature.badge}
                 </span>

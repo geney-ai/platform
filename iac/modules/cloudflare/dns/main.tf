@@ -3,6 +3,18 @@ data "cloudflare_zone" "main" {
   zone_id = var.zone_id
 }
 
+# A record for root domain
+resource "cloudflare_record" "root" {
+  count = var.create_root_record ? 1 : 0
+
+  zone_id = data.cloudflare_zone.main.id
+  name    = "@"
+  content = var.droplet_ip
+  type    = "A"
+  ttl     = var.ttl
+  proxied = var.proxied
+}
+
 # A records for each domain slug
 resource "cloudflare_record" "subdomains" {
   for_each = toset(var.domain_slugs)

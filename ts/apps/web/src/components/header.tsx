@@ -20,13 +20,20 @@ export default function Header() {
             className="mr-2"
           />
           <div className="flex flex-col">
-            <span className="font-black text-xl leading-none">generic</span>
+            <span className="font-black text-xl leading-none">GenericTS</span>
           </div>
         </a>
       </div>
 
       <nav className="flex items-stretch flex-grow">
-        {/* Empty nav for now */}
+        <div className="flex items-center gap-6 ml-8">
+          <a href="#features" className="text-sm font-medium hover:text-primary transition-colors">
+            Features
+          </a>
+          <a href="#roadmap" className="text-sm font-medium hover:text-primary transition-colors">
+            Roadmap
+          </a>
+        </div>
       </nav>
 
       <div className="flex items-center gap-2 mr-4">

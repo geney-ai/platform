@@ -1,5 +1,6 @@
 {% extends "layouts/base.html" %}
 {% from "components/theme-switcher.html" import theme_switcher_compact %}
+{% from "components/footer.html" import footer %}
 
 {% block body %}
 <!-- Navigation Header -->
@@ -31,4 +32,6 @@
 <main id="content">
     {{ content|safe }}
 </main>
+
+{{ footer() }}
 {% endblock %}

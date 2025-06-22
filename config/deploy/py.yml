@@ -12,8 +12,8 @@ servers:
 
 # SSH configuration  
 ssh:
-  keys_only: false
   user: root
+  key_data: ["<%= ENV['SSH_PRIVATE_KEY'] %>"]
 
 # Registry configuration
 registry:
@@ -35,3 +35,22 @@ proxy:
   ssl: true
   host: py.generic.krondor.org
   app_port: 3000
+
+# Environment variables
+env:
+  clear:
+    PORT: 3000
+    POSTGRES_URL: "postgresql://generic_user:generic_pass@generic-py-postgres:5432/generic_py"
+
+# Accessories (PostgreSQL database - internal only)
+accessories:
+  postgres:
+    image: postgres:16-alpine
+    host: "<%= ENV['DROPLET_IP'].strip %>"
+    env:
+      clear:
+        POSTGRES_DB: generic_py
+        POSTGRES_USER: generic_user
+        POSTGRES_PASSWORD: generic_pass
+    directories:
+      - data:/var/lib/postgresql/data

@@ -25,3 +25,9 @@ variable "proxied" {
   type        = bool
   default     = false
 }
+
+variable "create_root_record" {
+  description = "Whether to create a DNS record for the root domain"
+  type        = bool
+  default     = false
+}

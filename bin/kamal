@@ -9,32 +9,45 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 usage() {
   echo "Run Kamal commands with Terraform-sourced credentials"
   echo ""
-  echo "Usage: $0 <service> <kamal-command> [args]"
+  echo "Usage: $0 <stage> <service> <kamal-command> [args]"
   echo ""
-  echo "Services: py, ts-api, ts-web"
+  echo "Stage: production"
+  echo "Services: py, ts-api, ts-web, static"
   echo ""
   echo "Examples:"
-  echo "  $0 ts-web deploy"
-  echo "  $0 ts-web logs"
-  echo "  $0 ts-web rollback"
+  echo "  $0 production ts-web deploy"
+  echo "  $0 production ts-web logs"
+  echo "  $0 production ts-web rollback"
   exit 1
 }
 
 # Check arguments
-if [[ $# -lt 2 ]]; then
+if [[ $# -lt 3 ]]; then
   usage
 fi
 
-SERVICE="$1"
-shift
+STAGE="$1"
+SERVICE="$2"
+shift 2
+
+# Validate stage
+case "$STAGE" in
+  production)
+    ;;
+  *)
+    echo "Error: Unknown stage: $STAGE"
+    echo "Available stages: production"
+    exit 1
+    ;;
+esac
 
 # Validate service
 case "$SERVICE" in
-  py|ts-api|ts-web)
+  py|ts-api|ts-web|static)
     ;;
   *)
     echo "Error: Unknown service: $SERVICE"
-    echo "Available services: py, ts-api, ts-web"
+    echo "Available services: py, ts-api, ts-web, static"
     exit 1
     ;;
 esac
@@ -48,8 +61,8 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
 fi
 
 # Get infrastructure outputs from Terraform
-DROPLET_IP=$(cd "$REPO_ROOT" && ./bin/tf production output -raw digitalocean_droplet_ip)
-SSH_PRIVATE_KEY=$(cd "$REPO_ROOT" && ./bin/tf production output digitalocean_ssh_private_key | sed -n '3,13p')
+DROPLET_IP=$(cd "$REPO_ROOT" && ./bin/tf "$STAGE" output -raw digitalocean_droplet_ip)
+SSH_PRIVATE_KEY=$(cd "$REPO_ROOT" && ./bin/tf "$STAGE" output digitalocean_ssh_private_key | sed -n '3,13p')
 
 # Get Docker registry credentials from container-registry environment  
 REGISTRY_ENDPOINT=""
@@ -72,14 +85,14 @@ if [[ -d "$REPO_ROOT/iac/envs/container-registry" ]]; then
   fi
 fi
 
-# Create SSH key file from Terraform and add to SSH agent
-SSH_KEY_FILE="$REPO_ROOT/.kamal/ssh_key"
-echo "$SSH_PRIVATE_KEY" > "$SSH_KEY_FILE"
-chmod 600 "$SSH_KEY_FILE"
+# # Create SSH key file from Terraform and add to SSH agent
+# SSH_KEY_FILE="$REPO_ROOT/.kamal/ssh_key"
+# echo "$SSH_PRIVATE_KEY" > "$SSH_KEY_FILE"
+# chmod 600 "$SSH_KEY_FILE"
 
-# Add key to SSH agent (force replace if already exists)
-ssh-add -d "$SSH_KEY_FILE" 2>/dev/null || true
-ssh-add "$SSH_KEY_FILE" 2>/dev/null || true
+# # Add key to SSH agent (force replace if already exists)
+# ssh-add -d "$SSH_KEY_FILE" 2>/dev/null || true
+# ssh-add "$SSH_KEY_FILE" 2>/dev/null || true
 
 # Export for kamal config
 export DROPLET_IP
@@ -87,8 +100,7 @@ export REGISTRY_ENDPOINT
 export REGISTRY_NAME
 export DOCKERHUB_USERNAME
 export DOCKERHUB_TOKEN
-
-ls -la "$SSH_KEY_FILE" 2>/dev/null || echo "SSH key file not found"
+export SSH_PRIVATE_KEY
 
 # Run kamal 
 cd "$REPO_ROOT" && kamal "$@" -c "$CONFIG_FILE"

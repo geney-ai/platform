@@ -12,8 +12,8 @@ function App() {
         <Header />
         <main className="flex-grow">
           <Hero />
-          <About />
           <Features />
+          <About />
         </main>
         <Footer />
       </div>

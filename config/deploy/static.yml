@@ -1,9 +1,9 @@
-# Kamal deploy configuration for TypeScript Web service
-service: generic-ts-web
+# Kamal deploy configuration for Static site service
+service: generic-static
 
 # NOTE: this must match the name you passed to the container registry module
 # Container image
-image: "<%= ENV['REGISTRY_NAME'] %>/generic-ts-web"
+image: "<%= ENV['REGISTRY_NAME'] %>/generic-static"
 
 # Deploy to these servers
 servers:
@@ -24,8 +24,8 @@ registry:
 
 # Builder configuration
 builder:
-  dockerfile: ts/apps/web/Dockerfile
-  context: "ts"
+  dockerfile: static/Dockerfile
+  context: "static"
   arch: amd64
   cache:
     type: registry
@@ -33,5 +33,5 @@ builder:
 # Proxy configuration for SSL
 proxy:
   ssl: true
-  host: ts.generic.krondor.org
-  app_port: 3000
+  host: generic.krondor.org
+  app_port: 8080
