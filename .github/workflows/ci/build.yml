@@ -1,4 +1,4 @@
-name: Lint 🧹
+name: Build Check
 
 on:
   workflow_call:

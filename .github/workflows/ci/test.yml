@@ -1,4 +1,4 @@
-name: Lint 🧹
+name: Test Suite
 
 on:
   workflow_call:

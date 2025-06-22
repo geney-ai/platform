@@ -36,7 +36,6 @@ export DEV_SERVER_HOST=localhost
 export HOST_NAME=http://localhost:${DEV_SERVER_PORT}
 export LISTEN_ADDRESS=0.0.0.0
 export LISTEN_PORT=${DEV_SERVER_PORT}
-export SERVICE_SECRET='not-a-very-secret-secret'
 export DEBUG=True
 export DEV_MODE=True
 export LOG_PATH=

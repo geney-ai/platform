@@ -27,8 +27,6 @@ builder:
   dockerfile: py/Dockerfile
   context: "py"
   arch: amd64
-  cache:
-    type: registry
 
 # Proxy configuration for SSL
 proxy:
@@ -45,7 +43,7 @@ env:
 # Accessories (PostgreSQL database - internal only)
 accessories:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     host: "<%= ENV['DROPLET_IP'].strip %>"
     env:
       clear:

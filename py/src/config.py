@@ -47,10 +47,10 @@ class Secrets:
     def __init__(self):
         self.service_secret = empty_to_none("SERVICE_SECRET")
         if not self.service_secret:
-            raise ConfigException(
-                ConfigExceptionType.missing_env_var,
-                "SERVICE_SECRET environment variable must be set",
-            )
+            # Generate a random secret if not provided
+            import secrets
+            self.service_secret = secrets.token_urlsafe(32)
+            print(f"Generated SERVICE_SECRET: {self.service_secret[:8]}...")
         elif len(self.service_secret) < MIN_SECRET_LENGTH:
             raise ConfigException(
                 ConfigExceptionType.invalid_env_var,
