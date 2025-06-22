@@ -44,8 +44,7 @@ export default function Features() {
     {
       icon: <Rocket className="h-12 w-12 mx-auto mb-4" />,
       title: "CI/CD Pipeline",
-      description:
-        "Basic deployment pipeline for shipping updates quickly.",
+      description: "Basic deployment pipeline for shipping updates quickly.",
       badge: "Ship",
     },
   ];
@@ -71,7 +70,7 @@ export default function Features() {
             </div>
           ))}
         </div>
-        
+
         <h2 className="text-4xl font-bold text-center mb-6">Infrastructure</h2>
         <p className="text-xl text-center text-muted-foreground mb-16 max-w-2xl mx-auto">
           Built-in tools for development and deployment

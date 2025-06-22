@@ -43,11 +43,11 @@ esac
 
 # Validate service
 case "$SERVICE" in
-  py|ts-api|ts-web|static)
+  py|ts-web|static)
     ;;
   *)
     echo "Error: Unknown service: $SERVICE"
-    echo "Available services: py, ts-api, ts-web, static"
+    echo "Available services: py, ts-web, static"
     exit 1
     ;;
 esac
@@ -85,14 +85,15 @@ if [[ -d "$REPO_ROOT/iac/envs/container-registry" ]]; then
   fi
 fi
 
-# # Create SSH key file from Terraform and add to SSH agent
-# SSH_KEY_FILE="$REPO_ROOT/.kamal/ssh_key"
-# echo "$SSH_PRIVATE_KEY" > "$SSH_KEY_FILE"
-# chmod 600 "$SSH_KEY_FILE"
-
-# # Add key to SSH agent (force replace if already exists)
-# ssh-add -d "$SSH_KEY_FILE" 2>/dev/null || true
-# ssh-add "$SSH_KEY_FILE" 2>/dev/null || true
+# TODO: make this more generic
+# If the service is py, export the Google client ID and secret
+#  Source them from hashicorp vault using the generic-py-production vault app
+if [[ "$SERVICE" == "py" ]]; then
+  export VAULT_APP="generic-py-$STAGE"
+  source "$REPO_ROOT/bin/vault"
+  export PY_GOOGLE_CLIENT_ID=$(read_from_vault GOOGLE_CLIENT_ID)
+  export PY_GOOGLE_CLIENT_SECRET=$(read_from_vault GOOGLE_CLIENT_SECRET)
+fi
 
 # Export for kamal config
 export DROPLET_IP

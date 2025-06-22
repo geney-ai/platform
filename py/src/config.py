@@ -49,6 +49,7 @@ class Secrets:
         if not self.service_secret:
             # Generate a random secret if not provided
             import secrets
+
             self.service_secret = secrets.token_urlsafe(32)
             print(f"Generated SERVICE_SECRET: {self.service_secret[:8]}...")
         elif len(self.service_secret) < MIN_SECRET_LENGTH:

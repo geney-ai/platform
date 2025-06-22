@@ -51,7 +51,8 @@ fi
 export POSTGRES_URL=$(./bin/postgres.sh endpoint)
 
 # Start the main application
-export VAULT_APP=${VAULT_APP_DEV}
+# TODO (first-time-setup): replace with your own vault app
+export VAULT_APP='generic-py-development'
 run_with_vault uv run src/__main__.py
 
 # Exit the script

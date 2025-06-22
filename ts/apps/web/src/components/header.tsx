@@ -27,10 +27,16 @@ export default function Header() {
 
       <nav className="flex items-stretch flex-grow">
         <div className="flex items-center gap-6 ml-8">
-          <a href="#features" className="text-sm font-medium hover:text-primary transition-colors">
+          <a
+            href="#features"
+            className="text-sm font-medium hover:text-primary transition-colors"
+          >
             Features
           </a>
-          <a href="#roadmap" className="text-sm font-medium hover:text-primary transition-colors">
+          <a
+            href="#roadmap"
+            className="text-sm font-medium hover:text-primary transition-colors"
+          >
             Roadmap
           </a>
         </div>
