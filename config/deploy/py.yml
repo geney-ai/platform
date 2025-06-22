@@ -45,6 +45,7 @@ accessories:
   postgres:
     image: postgres:17-alpine
     host: "<%= ENV['DROPLET_IP'].strip %>"
+    port: "5432:5432"
     env:
       clear:
         POSTGRES_DB: generic_py

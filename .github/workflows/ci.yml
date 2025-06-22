@@ -7,32 +7,20 @@ on:
     branches: [ main ]
 
 jobs:
-  fmt:
-    name: Format Check
-    uses: ./.github/workflows/ci/fmt.yml
+  # Python CI
+  py-ci:
+    name: Python CI
+    uses: ./.github/workflows/ci-py.yml
     
-  lint:
-    name: Lint Check
-    uses: ./.github/workflows/ci/lint.yml
-    
-  types:
-    name: Type Check
-    uses: ./.github/workflows/ci/types.yml
-    
-  build:
-    name: Build Check
-    uses: ./.github/workflows/ci/build.yml
-    needs: [fmt, lint, types]
-    
-  test:
-    name: Test Suite
-    uses: ./.github/workflows/ci/test.yml
-    needs: [build]
+  # TypeScript CI
+  ts-ci:
+    name: TypeScript CI
+    uses: ./.github/workflows/ci-ts.yml
     
   ci-success:
     name: CI Success
     runs-on: ubuntu-latest
-    needs: [fmt, lint, types, build, test]
+    needs: [py-ci, ts-ci]
     if: always()
     steps:
       - name: Check if all jobs succeeded
