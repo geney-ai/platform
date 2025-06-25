@@ -49,7 +49,7 @@ export default function Header() {
             size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             aria-label="Toggle theme"
-            className="relative"
+            className="relative hidden md:flex"
           >
             <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -89,6 +89,22 @@ export default function Header() {
             >
               Roadmap
             </a>
+            <button
+              className="py-2 text-sm font-medium hover:text-primary transition-colors text-left flex items-center gap-2"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              {theme === "dark" ? (
+                <>
+                  <Sun className="h-4 w-4" />
+                  Light Mode
+                </>
+              ) : (
+                <>
+                  <Moon className="h-4 w-4" />
+                  Dark Mode
+                </>
+              )}
+            </button>
           </nav>
         </div>
       )}

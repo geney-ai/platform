@@ -22,35 +22,12 @@
             -webkit-text-fill-color: transparent;
         }
         
-        /* Mobile menu styles */
+        /* Responsive button margins */
         @media (max-width: 768px) {
-            .mobile-menu {
-                display: none;
-                position: absolute;
-                top: 100%;
-                right: 0;
-                background: white;
-                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-                border-radius: 0.5rem;
-                margin: 0.5rem;
-                min-width: 200px;
-            }
-            .mobile-menu.active {
-                display: block;
-            }
-            .mobile-menu-button {
-                display: flex;
-            }
-            .desktop-nav {
-                display: none;
-            }
-        }
-        @media (min-width: 769px) {
-            .mobile-menu-button {
-                display: none;
-            }
-            .mobile-menu {
-                display: none !important;
+            .github-button {
+                margin: 0.25rem;
+                padding-left: 1rem;
+                padding-right: 1rem;
             }
         }
     </style>
@@ -71,23 +48,9 @@
             <!-- Empty nav for now -->
         </nav>
         
-        <!-- Desktop GitHub button -->
-        <div class="desktop-nav flex items-stretch">
-            <a href="https://github.com/amiller68/generic" class="bg-black text-white px-6 py-2 hover:opacity-90 flex items-center justify-center rounded-full mx-3 my-2">GitHub →</a>
-        </div>
-        
-        <!-- Mobile menu button -->
-        <button class="mobile-menu-button p-2 m-2 hover:bg-gray-100 rounded-lg" onclick="toggleMobileMenu()">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-            </svg>
-        </button>
-        
-        <!-- Mobile menu dropdown -->
-        <div id="mobileMenu" class="mobile-menu">
-            <div class="p-4 space-y-3">
-                <a href="https://github.com/amiller68/generic" class="block bg-black text-white px-4 py-2 hover:opacity-90 text-center rounded-full">GitHub →</a>
-            </div>
+        <!-- GitHub button -->
+        <div class="flex items-stretch">
+            <a href="https://github.com/amiller68/generic" class="github-button bg-black text-white px-6 py-2 hover:opacity-90 flex items-center justify-center rounded-full mx-3 my-2">GitHub →</a>
         </div>
     </header>
 
@@ -376,22 +339,6 @@
                     behavior: 'smooth'
                 });
             });
-        });
-        
-        // Mobile menu toggle
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobileMenu');
-            menu.classList.toggle('active');
-        }
-        
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const menu = document.getElementById('mobileMenu');
-            const button = document.querySelector('.mobile-menu-button');
-            
-            if (!menu.contains(event.target) && !button.contains(event.target)) {
-                menu.classList.remove('active');
-            }
         });
     </script>
 </body>
