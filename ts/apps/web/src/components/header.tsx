@@ -57,7 +57,7 @@ export default function Header() {
               <span className="sr-only">Toggle theme</span>
             </Button>
           </div>
-          
+
           <Button
             variant="ghost"
             size="icon"
