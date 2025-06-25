@@ -35,24 +35,17 @@
   </button>
 </header>
 
-<!-- Mobile menu modal -->
-<div id="mobile-menu" class="fixed inset-0 z-50 hidden">
-  <!-- Backdrop -->
-  <div class="absolute inset-0 bg-black bg-opacity-50" onclick="toggleMobileMenu()"></div>
-  
-  <!-- Modal content -->
-  <div class="absolute top-16 right-4 w-64 bg-background border rounded-lg shadow-lg p-4">
-    <!-- Menu content -->
-    <div class="space-y-4">
-      <!-- Theme switcher -->
-      <div class="flex items-center justify-between">
-        <span class="text-sm font-medium">Dark Mode</span>
-        {{ theme_switcher_compact() }}
-      </div>
-      
-      <!-- Beta button -->
-      <a href="/app/dashboard" class="bg-foreground text-background px-6 py-2 hover:opacity-90 flex items-center justify-center rounded-full w-full">beta →</a>
+<!-- Mobile dropdown menu -->
+<div id="mobile-menu" class="absolute top-14 right-4 w-64 bg-background border rounded-lg shadow-lg p-4 hidden sm:hidden">
+  <div class="space-y-4">
+    <!-- Theme switcher -->
+    <div class="flex items-center justify-between">
+      <span class="text-sm font-medium">Dark Mode</span>
+      {{ theme_switcher_compact() }}
     </div>
+    
+    <!-- Beta button -->
+    <a href="/app/dashboard" class="bg-foreground text-background px-6 py-2 hover:opacity-90 flex items-center justify-center rounded-full w-full">beta →</a>
   </div>
 </div>
 
@@ -61,6 +54,16 @@ function toggleMobileMenu() {
   const menu = document.getElementById('mobile-menu');
   menu.classList.toggle('hidden');
 }
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+  const menu = document.getElementById('mobile-menu');
+  const toggle = document.getElementById('mobile-menu-toggle');
+  
+  if (!menu.contains(event.target) && !toggle.contains(event.target) && !menu.classList.contains('hidden')) {
+    menu.classList.add('hidden');
+  }
+});
 </script>
 
 <!-- Main content area -->
