@@ -4,9 +4,10 @@
 
 {% block body %}
 <!-- Navigation Header -->
-<header class="flex items-stretch w-full shadow-sm">
-  <div class="flex items-center w-48">
-    <a href="/" class="flex items-center px-4 py-2 hover:bg-muted rounded-full mx-2 my-1" hx-get="/" hx-target="#content" hx-push-url="true">
+<header class="flex items-center justify-between w-full shadow-sm px-4 py-2">
+  <!-- Logo -->
+  <div class="flex items-center">
+    <a href="/" class="flex items-center px-2 py-1 hover:bg-muted rounded-full" hx-get="/" hx-target="#content" hx-push-url="true">
       <img src="/static/icon.svg" alt="Icon" class="h-8 mr-2">
       <div class="flex flex-col">
         <span class="font-black text-xl leading-none">generic</span>
@@ -14,19 +15,55 @@
     </a>
   </div>
 
-  <nav class="flex items-stretch flex-grow">
+  <!-- Desktop Navigation -->
+  <nav class="hidden sm:flex items-center flex-grow justify-center">
     <!-- Empty nav for now -->
   </nav>
   
-  <div class="flex items-center gap-2 mr-4">
+  <!-- Desktop controls -->
+  <div class="hidden sm:flex items-center gap-2">
     <!-- Dark mode toggle -->
     {{ theme_switcher_compact() }}
+    
+    <!-- Beta button -->
+    <a href="/app/dashboard" class="bg-foreground text-background px-6 py-2 hover:opacity-90 flex items-center justify-center rounded-full ml-2">beta →</a>
   </div>
   
-  <div class="flex items-stretch w-48">
-    <a href="/app/dashboard" class="bg-foreground text-background px-6 py-2 hover:opacity-90 flex items-center justify-center rounded-full mx-3 my-2">beta →</a>
-  </div>
+  <!-- Mobile menu button -->
+  <button id="mobile-menu-toggle" class="sm:hidden p-2" data-uk-toggle="target: #mobile-menu">
+    <uk-icon icon="menu" class="w-6 h-6"></uk-icon>
+  </button>
 </header>
+
+<!-- Mobile menu -->
+<div id="mobile-menu" class="uk-offcanvas" data-uk-offcanvas="mode: push; overlay: true">
+  <div class="uk-offcanvas-bar bg-background border-l">
+    <!-- Close button -->
+    <button class="uk-offcanvas-close" type="button" data-uk-close></button>
+    
+    <!-- Mobile menu content -->
+    <div class="flex flex-col h-full">
+      <!-- Navigation -->
+      <nav class="flex-grow pt-8">
+        <!-- Nav items can go here -->
+      </nav>
+      
+      <!-- Bottom section -->
+      <div class="border-t pt-4 pb-8 space-y-4">
+        <!-- Theme switcher -->
+        <div class="flex items-center justify-between px-4">
+          <span class="text-sm font-medium">Dark Mode</span>
+          {{ theme_switcher_compact() }}
+        </div>
+        
+        <!-- Beta button -->
+        <div class="px-4">
+          <a href="/app/dashboard" class="bg-foreground text-background px-6 py-2 hover:opacity-90 flex items-center justify-center rounded-full w-full">beta →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Main content area -->
 <main id="content">
