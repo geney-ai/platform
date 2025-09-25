@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 # Script to manage a local PostgreSQL container for development (Mac-optimized)
+# TODO (amiller68): on a rainy day, i'd love 
+#  to move this into a nested dir
+
 set -o errexit
 set -o nounset
 

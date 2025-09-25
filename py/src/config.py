@@ -58,8 +58,23 @@ class Secrets:
                 f"SERVICE_SECRET environment variable must be at least {MIN_SECRET_LENGTH} characters long",
             )
 
-        self.google_client_id = empty_to_none("GOOGLE_CLIENT_ID")
-        self.google_client_secret = empty_to_none("GOOGLE_CLIENT_SECRET")
+
+        # google sso credentials
+        self.google_client_id = empty_to_none("GOOGLE_O_AUTH_CLIENT_ID")
+        self.google_client_secret = empty_to_none("GOOGLE_O_AUTH_CLIENT_SECRET")
+
+        # throw if GOOGLE_O_AUTH_CLIENT_ID or GOOGLE_O_AUTH_CLIENT_SECRET is not set
+        if not self.google_client_id:
+            raise ConfigException(
+                ConfigExceptionType.missing_env_var,
+                "GOOGLE_O_AUTH_CLIENT_ID environment variable must be set",
+            )
+        if not self.google_client_secret:
+            raise ConfigException(
+                ConfigExceptionType.missing_env_var,
+                "GOOGLE_O_AUTH_CLIENT_SECRET environment variable must be set",
+            )
+
 
 
 # TODO: getopt() for cmd line arguments

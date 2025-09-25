@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Source configuration
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/config.sh"
 source "$SCRIPT_DIR/../../bin/vault"
 
@@ -11,23 +11,23 @@ START_DB=false
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
-    -d|--db)
-      START_DB=true
-      shift
-      ;;
-    -h|--help)
-      echo "Usage: $0 [options]"
-      echo ""
-      echo "Options:"
-      echo "  -d, --db          Start PostgreSQL"
-      echo "  -h, --help        Show this help message"
-      exit 0
-      ;;
-    *)
-      echo "Unknown option: $1"
-      echo "Use --help for usage information"
-      exit 1
-      ;;
+  -d | --db)
+    START_DB=true
+    shift
+    ;;
+  -h | --help)
+    echo "Usage: $0 [options]"
+    echo ""
+    echo "Options:"
+    echo "  -d, --db          Start PostgreSQL"
+    echo "  -h, --help        Show this help message"
+    exit 0
+    ;;
+  *)
+    echo "Unknown option: $1"
+    echo "Use --help for usage information"
+    exit 1
+    ;;
   esac
 done
 
@@ -42,18 +42,17 @@ export LOG_PATH=
 
 # Start PostgreSQL
 if [ "$START_DB" = true ]; then
-    echo "Starting PostgreSQL..."
-    ./bin/postgres.sh run
-    # Give PostgreSQL a moment to start
-    sleep 2
+  echo "Starting PostgreSQL..."
+  ./bin/postgres.sh run
+  # Give PostgreSQL a moment to start
+  sleep 2
 fi
 
 export POSTGRES_URL=$(./bin/postgres.sh endpoint)
 
 # Start the main application
-# TODO (first-time-setup): replace with your own vault app
-export VAULT_APP='generic-py-development'
-run_with_vault uv run src/__main__.py
+echo "Running application..."
+run_with_vault --stage development -- uv run src/__main__.py
 
 # Exit the script
 exit 0
