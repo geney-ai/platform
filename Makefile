@@ -166,3 +166,12 @@ branding-generate: ## Regenerate platform-specific branding configs
 	@cd branding && npm run generate:all
 	@echo "✓ Branding configs regenerated"
 	@echo "Run 'make styles' to rebuild CSS with new branding"
+
+# Terraform Cloud management - pass all arguments after 'tf-cloud' to the script
+.PHONY: tf-cloud
+tf-cloud: ## Terraform Cloud management - pass all arguments after 'tf-cloud' to the script
+	@./bin/tf-cloud $(filter-out $@,$(MAKECMDGOALS))
+
+# Catch additional arguments to tf-cloud command
+%:
+	@:

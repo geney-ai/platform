@@ -6,25 +6,25 @@
 set -o errexit
 set -o nounset
 
-# Source configuration and utilities
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source "$SCRIPT_DIR/config.sh"
-source "$SCRIPT_DIR/utils.sh"
+# NOTE (amiller68): points back to the project root
+PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
+# which lets us easily source utils
+source "$PROJECT_ROOT/bin/utils.sh"
+# and we should have access to our project config
+source_project_config
 
-# NOTE (amiller68): we source APP_NAME from config.sh
-
-if [ -z "$APP_NAME" ]; then
-    echo -e "${RED}Error: APP_NAME is not set${NC}"
+if [ -z "$PROJECT_NAME" ]; then
+    echo -e "${RED}Error: PROJECT_NAME is not set${NC}"
     exit 1
 fi
 
-POSTGRES_CONTAINER_NAME="${APP_NAME}-postgres"
-POSTGRES_VOLUME_NAME="${APP_NAME}-postgres-data"
+POSTGRES_CONTAINER_NAME="${PROJECT_NAME}-postgres"
+POSTGRES_VOLUME_NAME="${PROJECT_NAME}-postgres-data"
 POSTGRES_PORT=5432
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_IMAGE_NAME=postgres:17
-POSTGRES_DB="${APP_NAME}"
+POSTGRES_DB="${PROJECT_NAME}"
 
 # Check if docker or podman is available
 CONTAINER_RUNTIME="docker"
@@ -41,7 +41,7 @@ function check_runtime {
 }
 
 # Start local PostgreSQL for development
-function run {
+function up {
     check_runtime
 
     print_header "Starting PostgreSQL"
@@ -143,7 +143,7 @@ function start_postgres_container {
     fi
 }
 
-function clean {
+function down {
     check_runtime
     print_header "Cleaning PostgreSQL Container"
     
@@ -176,6 +176,96 @@ function connect {
     psql ""$(./bin/postgres.sh endpoint)""
 }
 
+function migrate {
+    print_header "Running Database Migrations"
+
+    # Check if POSTGRES_URL is set (using ${VAR:-} to handle unset variable with nounset)
+    if [ -z "${POSTGRES_URL:-}" ]; then
+        echo -e "${YELLOW}POSTGRES_URL environment variable is not set${NC}"
+        echo -e "${YELLOW}Starting local PostgreSQL container...${NC}"
+        up
+        export POSTGRES_URL=$(endpoint)
+        echo -e "${GREEN}Using local PostgreSQL for migrations${NC}"
+    fi
+
+    echo "Running migrations with Alembic..."
+
+    # Check if uv command exists
+    if ! command -v uv &>/dev/null; then
+        echo -e "${RED}Error: 'uv' command not found. Please install uv first.${NC}"
+        exit 1
+    fi
+
+    # Run the migrations
+    uv run alembic upgrade head
+    check_result "Database migrations"
+
+    print_summary "Migrations completed successfully!" "migration(s) failed"
+}
+
+function prepare {
+    print_header "Preparing Database Migration"
+
+    local manual=false
+    local description=""
+
+    # Check environment variable for manual flag
+    if [ "${MANUAL:-}" = "1" ] || [ "${MANUAL:-}" = "true" ]; then
+        manual=true
+    fi
+
+    # Parse arguments
+    while [[ "$#" -gt 0 ]]; do
+        case $1 in
+        --manual)
+            manual=true
+            shift
+            ;;
+        *)
+            # Concatenate all remaining arguments as the description
+            description="$*"
+            break
+            ;;
+        esac
+    done
+
+    # Check for description
+    if [ -z "$description" ]; then
+        echo -e "${RED}Error: Please provide a description for the migration.${NC}"
+        echo "Usage: $0 prepare [--manual] <description>"
+        echo "Example: $0 prepare 'Add user table'"
+        echo "Example: $0 prepare --manual 'Custom migration for data cleanup'"
+        exit 1
+    fi
+
+    # Start PostgreSQL if needed (for development)
+    up
+    export POSTGRES_URL=$(endpoint)
+    echo -e "${YELLOW}Using local PostgreSQL for migration generation${NC}"
+
+    # Check if uv command exists
+    if ! command -v uv &>/dev/null; then
+        echo -e "${RED}Error: 'uv' command not found. Please install uv first.${NC}"
+        exit 1
+    fi
+
+    # Generate alembic migrations
+    echo "Generating migration: $description"
+
+    # Run alembic revision and capture output
+    if [ "$manual" = true ]; then
+        echo "Creating manual migration..."
+        uv run alembic revision -m "$description"
+    else
+        echo "Auto-generating migration from model changes..."
+        uv run alembic revision --autogenerate -m "$description"
+    fi
+
+    check_result "Migration generation"
+
+    print_summary "Migration prepared successfully!" "migration preparation failed"
+}
+
 function status {
     check_runtime
     print_header "PostgreSQL Status"
@@ -203,26 +293,37 @@ function status {
 }
 
 function help {
-    echo -e "${YELLOW}PostgreSQL Container Manager${NC}"
+    echo -e "${YELLOW}PostgreSQL Container Manager & Database Tools${NC}"
     echo ""
-    echo "Usage: $0 [command]"
+    echo "Usage: $0 [command] [options]"
     echo ""
-    echo "Commands:"
-    echo "  run      - Start a local PostgreSQL container for development"
-    echo "  clean    - Remove the PostgreSQL container and volume"
-    echo "  endpoint - Print the PostgreSQL connection URLs"
-    echo "  connect  - Connect to the postgres instance"
-    echo "  status   - Check container status and connection"
-    echo "  help     - Show this help message"
+    echo "Container Management Commands:"
+    echo "  up                 - Start a local PostgreSQL container for development"
+    echo "  down               - Remove the PostgreSQL container and volume"
+    echo "  endpoint           - Print the PostgreSQL connection URLs"
+    echo "  connect            - Connect to the postgres instance"
+    echo "  status             - Check container status and connection"
     echo ""
-    echo "For production, set the DATABASE_URL environment variable."
+    echo "Migration Commands:"
+    echo "  migrate            - Run database migrations (auto-starts local DB if needed)"
+    echo "  prepare            - Create a new migration"
+    echo "    [--manual] <description>"
+    echo "                     - Use --manual for manual migration (no auto-generate)"
+    echo ""
+    echo "  help               - Show this help message"
+    echo ""
+    echo "For production, set the POSTGRES_URL environment variable."
 }
 
 # Process command
 CMD=${1:-help}
+shift || true  # Shift to remove command from arguments
+
+# NOTE (amiller68): these cannot conflict with
+#  our make directives
 case "$CMD" in
-run | clean | endpoint | connect | status | help)
-    $CMD
+up | down | endpoint | connect | status | help | migrate | prepare)
+    $CMD "$@"
     ;;
 *)
     echo -e "${RED}Unknown command: $CMD${NC}"

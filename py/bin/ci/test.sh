@@ -2,8 +2,11 @@
 
 # Test script for running project tests
 
-# Source utilities
-source "$(dirname "$0")/utils.sh"
+# Get project root (going up from py/bin/ci to root)
+PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../../.." && pwd )"
+
+# Source shared utilities from project root
+source "$PROJECT_ROOT/bin/utils.sh"
 
 # Default values
 VERBOSE=false
@@ -53,17 +56,17 @@ if [ -n "$POSTGRES_URL" ]; then
     echo "  Database: $(echo $POSTGRES_URL | sed 's/postgresql:\/\/[^@]*@/postgresql:\/\/***@/')"
 else
     # Try to get it from running container
-    if ./bin/postgres.sh endpoint >/dev/null 2>&1; then
-        export POSTGRES_URL=$(./bin/postgres.sh endpoint)
+    if ./bin/db.sh endpoint >/dev/null 2>&1; then
+        export POSTGRES_URL=$(./bin/db.sh endpoint)
         echo -e "${GREEN}✓ Using running PostgreSQL container${NC}"
     else
         # Start PostgreSQL
         echo "Starting PostgreSQL container..."
-        ./bin/postgres.sh run >/dev/null 2>&1
+        ./bin/db.sh up >/dev/null 2>&1
         check_result "PostgreSQL startup"
         
         # Get the endpoint
-        export POSTGRES_URL=$(./bin/postgres.sh endpoint)
+        export POSTGRES_URL=$(./bin/db.sh endpoint)
         echo -e "${GREEN}✓ Started new PostgreSQL container${NC}"
     fi
     echo "  Database: $(echo $POSTGRES_URL | sed 's/postgresql:\/\/[^@]*@/postgresql:\/\/***@/')"

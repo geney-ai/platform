@@ -1,0 +1,484 @@
+#!/bin/bash
+
+# tf-cloud - Terraform Cloud Management Script
+# Manages Terraform Cloud organizations and workspaces for multi-stage deployments
+
+set -e
+
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
+
+# Source the main project utils
+source "$PROJECT_ROOT/bin/utils.sh"
+
+# Source the project config using our helper
+source_project_config || exit 1
+
+# Export Terraform configuration
+export TF_ORGANIZATION="${TF_ORGANIZATION:-${PROJECT_NAME}-org}"
+export TF_WORKSPACE_PREFIX="${PROJECT_NAME}"
+
+# Parse stages into an array, excluding development
+IFS=',' read -ra ALL_STAGES <<< "$STAGES"
+export WORKSPACE_STAGES=()
+for stage in "${ALL_STAGES[@]}"; do
+    stage=$(echo "$stage" | xargs)  # trim whitespace
+    if [ "$stage" != "development" ]; then
+        WORKSPACE_STAGES+=("$stage")
+    fi
+done
+
+# Additional colors not in main utils
+export BLUE='\033[0;34m'
+export GRAY='\033[0;90m'
+
+# Function to get workspace name for a stage
+get_workspace_name() {
+    local stage=$1
+    echo "${TF_WORKSPACE_PREFIX}-${stage}"
+}
+
+# Function to print info messages
+print_info() {
+    echo -e "${BLUE}ℹ $1${NC}"
+}
+
+# Function to print success messages
+print_success() {
+    echo -e "${GREEN}✓ $1${NC}"
+}
+
+# Function to print error messages
+print_error() {
+    echo -e "${RED}✗ $1${NC}"
+}
+
+# Function to load Terraform Cloud token from vault or credentials file
+load_tf_token() {
+    local tf_token=""
+
+    # First try to get token from vault
+    if [ -f "$PROJECT_ROOT/bin/vault" ]; then
+        # Use subshell to isolate vault output
+        tf_token=$(
+            "$PROJECT_ROOT/bin/vault" read TF_TOKEN 2>/dev/null || echo ""
+        )
+        if [ -n "$tf_token" ]; then
+            echo "$tf_token"
+            return 0
+        fi
+    fi
+
+    # If no vault token, check credentials file from terraform login
+    if [ -f "$HOME/.terraform.d/credentials.tfrc.json" ]; then
+        if command -v jq &> /dev/null; then
+            tf_token=$(jq -r '.credentials["app.terraform.io"].token' "$HOME/.terraform.d/credentials.tfrc.json" 2>/dev/null || echo "")
+        else
+            tf_token=$(grep -o '"token"[[:space:]]*:[[:space:]]*"[^"]*"' "$HOME/.terraform.d/credentials.tfrc.json" 2>/dev/null | cut -d'"' -f4 || echo "")
+        fi
+    fi
+
+    echo "$tf_token"
+}
+
+# Function to check if Terraform is installed
+check_terraform_cli() {
+    if ! command -v terraform &> /dev/null; then
+        print_error "Terraform CLI is not installed. Please install it first."
+        echo "Visit: https://developer.hashicorp.com/terraform/downloads"
+        return 1
+    fi
+    return 0
+}
+
+# Function to create Terraform Cloud organization
+function create_org() {
+    print_header "Creating Terraform Cloud Organization"
+
+    local tf_token=$(load_tf_token)
+
+    if [ -z "$tf_token" ]; then
+        print_error "Terraform Cloud token not found"
+        print_info "Add TERRAFORM_CLOUD_API_TOKEN to your ${CLOUD_VAULT} vault or run: terraform login"
+        return 1
+    fi
+
+    print_info "Creating organization '$TF_ORGANIZATION'..."
+
+    local response=$(curl -s -w "\n%{http_code}" \
+        -H "Authorization: Bearer $tf_token" \
+        -H "Content-Type: application/vnd.api+json" \
+        -X POST \
+        -d "{
+            \"data\": {
+                \"type\": \"organizations\",
+                \"attributes\": {
+                    \"name\": \"$TF_ORGANIZATION\",
+                    \"email\": \"admin@$TF_ORGANIZATION.local\"
+                }
+            }
+        }" \
+        "https://app.terraform.io/api/v2/organizations")
+
+    local http_code=$(echo "$response" | tail -n1)
+
+    if [ "$http_code" = "201" ] || [ "$http_code" = "422" ]; then
+        print_success "Organization '$TF_ORGANIZATION' is ready"
+        return 0
+    else
+        print_error "Failed to create organization (HTTP $http_code)"
+        return 1
+    fi
+}
+
+# Internal function to create workspace (not exposed as command)
+function _create_workspace() {
+    local stage="$1"
+    local workspace_name=$(get_workspace_name "$stage")
+
+    print_header "Creating Terraform Workspace: $workspace_name"
+
+    local tf_token=$(load_tf_token)
+
+    if [ -z "$tf_token" ]; then
+        print_error "Terraform Cloud token not found"
+        print_info "Add TERRAFORM_CLOUD_API_TOKEN to your ${CLOUD_VAULT} vault or run: terraform login"
+        return 1
+    fi
+
+    print_info "Creating workspace '$workspace_name'..."
+
+    local response=$(curl -s -w "\n%{http_code}" \
+        -H "Authorization: Bearer $tf_token" \
+        -H "Content-Type: application/vnd.api+json" \
+        -X POST \
+        -d "{
+            \"data\": {
+                \"type\": \"workspaces\",
+                \"attributes\": {
+                    \"name\": \"$workspace_name\",
+                    \"execution-mode\": \"local\",
+                    \"auto-apply\": false,
+                    \"description\": \"Workspace for $stage environment\",
+                    \"global-remote-state\": true
+                }
+            }
+        }" \
+        "https://app.terraform.io/api/v2/organizations/$TF_ORGANIZATION/workspaces")
+
+    local http_code=$(echo "$response" | tail -n1)
+
+    if [ "$http_code" = "201" ] || [ "$http_code" = "422" ]; then
+        print_success "Workspace '$workspace_name' is ready"
+
+        # Update backend config in iac/stages
+        update_backend_config "$stage"
+        return 0
+    else
+        print_error "Failed to create workspace (HTTP $http_code)"
+        return 1
+    fi
+}
+
+# Function to update backend configuration in iac/stages
+function update_backend_config() {
+    local stage="$1"
+    local workspace_name=$(get_workspace_name "$stage")
+
+    # Check if stage directory exists
+    local stage_dir="$PROJECT_ROOT/iac/stages/$stage"
+
+    if [ ! -d "$stage_dir" ]; then
+        print_info "Stage directory '$stage_dir' not found, skipping backend config"
+        return 0
+    fi
+
+    local terraform_file="$stage_dir/terraform.tf"
+
+    # Create or update terraform.tf with correct backend
+    cat > "$terraform_file" << EOF
+terraform {
+  cloud {
+    organization = "$TF_ORGANIZATION"
+
+    workspaces {
+      name = "$workspace_name"
+    }
+  }
+}
+EOF
+
+    print_success "Backend configuration updated at $terraform_file"
+}
+
+# Function to migrate envs to stages
+function migrate_envs_to_stages() {
+    print_header "Migrating iac/envs to iac/stages"
+
+    if [ ! -d "$PROJECT_ROOT/iac/envs" ]; then
+        print_info "No iac/envs directory found, skipping migration"
+        return 0
+    fi
+
+    if [ -d "$PROJECT_ROOT/iac/stages" ]; then
+        print_info "iac/stages already exists, checking for needed migrations..."
+    else
+        print_info "Creating iac/stages directory..."
+        mkdir -p "$PROJECT_ROOT/iac/stages"
+    fi
+
+    # Migrate production env
+    if [ -d "$PROJECT_ROOT/iac/envs/production" ] && [ ! -d "$PROJECT_ROOT/iac/stages/production" ]; then
+        print_info "Migrating production environment..."
+        mv "$PROJECT_ROOT/iac/envs/production" "$PROJECT_ROOT/iac/stages/production"
+        print_success "Migrated production to stages/"
+    fi
+
+    # Migrate container-registry to registry stage
+    if [ -d "$PROJECT_ROOT/iac/envs/container-registry" ] && [ ! -d "$PROJECT_ROOT/iac/stages/registry" ]; then
+        print_info "Migrating container-registry to registry stage..."
+        mv "$PROJECT_ROOT/iac/envs/container-registry" "$PROJECT_ROOT/iac/stages/registry"
+        print_success "Migrated container-registry to stages/registry"
+    fi
+
+    # Migrate common if it exists
+    if [ -d "$PROJECT_ROOT/iac/envs/common" ] && [ ! -d "$PROJECT_ROOT/iac/stages/common" ]; then
+        print_info "Migrating common..."
+        mv "$PROJECT_ROOT/iac/envs/common" "$PROJECT_ROOT/iac/stages/common"
+        print_success "Migrated common to stages/"
+    fi
+
+    # Check if envs is now empty and remove it
+    if [ -d "$PROJECT_ROOT/iac/envs" ]; then
+        if [ -z "$(ls -A $PROJECT_ROOT/iac/envs)" ]; then
+            rmdir "$PROJECT_ROOT/iac/envs"
+            print_success "Removed empty envs directory"
+        else
+            print_info "iac/envs still contains files, not removing"
+        fi
+    fi
+
+    # Update Makefile to use stages instead of envs
+    if [ -f "$PROJECT_ROOT/iac/Makefile" ]; then
+        print_info "Updating iac/Makefile to use stages instead of envs..."
+        sed -i.bak 's|envs/|stages/|g' "$PROJECT_ROOT/iac/Makefile"
+        rm -f "$PROJECT_ROOT/iac/Makefile.bak"
+        print_success "Updated Makefile to use stages"
+    fi
+
+    return 0
+}
+
+# Main init function
+function init() {
+    print_header "Terraform Cloud Initialization"
+
+    echo "Configuration:"
+    echo "  PROJECT_NAME: $PROJECT_NAME"
+    echo "  TF_ORGANIZATION: $TF_ORGANIZATION"
+    echo "  WORKSPACE_STAGES: ${WORKSPACE_STAGES[*]}"
+    echo ""
+
+    # Migrate envs to stages first
+    migrate_envs_to_stages || return 1
+
+    # Check prerequisites
+    check_terraform_cli || {
+        print_error "Please install Terraform CLI first"
+        exit 1
+    }
+
+    # Check authentication
+    local tf_token=$(load_tf_token)
+    if [ -z "$tf_token" ]; then
+        print_info "Terraform Cloud authentication required"
+        echo "Option 1: Add TERRAFORM_CLOUD_API_TOKEN to your ${CLOUD_VAULT} vault"
+        echo "Option 2: Run: terraform login"
+        echo ""
+        read -p "Would you like to login now? (y/n) " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            terraform login
+        else
+            exit 1
+        fi
+    fi
+
+    # Create Terraform Cloud organization
+    create_org || return 1
+
+    # Create workspaces for non-dev stages
+    for stage in "${WORKSPACE_STAGES[@]}"; do
+        _create_workspace "$stage" || return 1
+    done
+
+    print_summary "Initialization completed successfully!" "initialization failed"
+
+    if [ $ERRORS -eq 0 ]; then
+        echo ""
+        print_header "Next Steps"
+        echo "1. Navigate to the terraform directory:"
+        echo "   cd terraform"
+        echo "2. Initialize Terraform for your stage:"
+        echo "   terraform init -backend-config=backend-<stage>.tf"
+        echo "3. Create your infrastructure code"
+        echo "4. Plan and apply:"
+        echo "   terraform plan"
+        echo "   terraform apply"
+    fi
+}
+
+# Function to show status
+function status() {
+    print_header "Terraform Cloud Status"
+
+    # Check Terraform Cloud
+    local tf_token=$(load_tf_token)
+    if [ -n "$tf_token" ]; then
+        echo -e "${GREEN}✓ Terraform Cloud authenticated${NC}"
+
+        # Check organization
+        local org_check=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $tf_token" \
+            "https://app.terraform.io/api/v2/organizations/$TF_ORGANIZATION")
+
+        if [ "$org_check" = "200" ]; then
+            echo -e "${GREEN}✓ Organization '$TF_ORGANIZATION' exists${NC}"
+
+            # List workspaces
+            echo ""
+            echo "Checking workspaces:"
+            for stage in "${WORKSPACE_STAGES[@]}"; do
+                local workspace_name=$(get_workspace_name "$stage")
+                local ws_check=$(curl -s -o /dev/null -w "%{http_code}" \
+                    -H "Authorization: Bearer $tf_token" \
+                    "https://app.terraform.io/api/v2/organizations/$TF_ORGANIZATION/workspaces/$workspace_name")
+
+                if [ "$ws_check" = "200" ]; then
+                    echo -e "  ${GREEN}✓ $workspace_name exists${NC}"
+                else
+                    echo -e "  ${YELLOW}○ $workspace_name not found${NC}"
+                fi
+            done
+
+            # Check backend configurations
+            echo ""
+            echo "Checking backend configurations:"
+            for stage in "${WORKSPACE_STAGES[@]}"; do
+                local workspace_name=$(get_workspace_name "$stage")
+                local stage_dir="$PROJECT_ROOT/iac/stages/$stage"
+
+                # Check for legacy envs directory if stages doesn't exist
+                if [ ! -d "$stage_dir" ] && [ -d "$PROJECT_ROOT/iac/envs/$stage" ]; then
+                    stage_dir="$PROJECT_ROOT/iac/envs/$stage"
+                fi
+
+                if [ -d "$stage_dir" ]; then
+                    local terraform_file="$stage_dir/terraform.tf"
+                    if [ -f "$terraform_file" ]; then
+                        # Check if backend is configured correctly
+                        if grep -q "organization = \"$TF_ORGANIZATION\"" "$terraform_file" && \
+                           grep -q "name = \"$workspace_name\"" "$terraform_file"; then
+                            echo -e "  ${GREEN}✓ $stage backend configured correctly${NC}"
+                        else
+                            echo -e "  ${YELLOW}⚠ $stage backend needs update (run 'make tf-cloud init')${NC}"
+                        fi
+                    else
+                        echo -e "  ${YELLOW}○ $stage missing terraform.tf${NC}"
+                    fi
+                else
+                    echo -e "  ${GRAY}○ $stage directory not found${NC}"
+                fi
+            done
+        else
+            echo -e "${YELLOW}○ Organization '$TF_ORGANIZATION' not found${NC}"
+        fi
+    else
+        echo -e "${YELLOW}○ Terraform Cloud not authenticated${NC}"
+        echo ""
+        echo "To authenticate:"
+        echo "  Option 1: Add TERRAFORM_CLOUD_API_TOKEN to your ${CLOUD_VAULT} vault"
+        echo "  Option 2: Run: terraform login"
+    fi
+}
+
+# Function to list workspaces
+function list_workspaces() {
+    print_header "Terraform Cloud Workspaces"
+
+    local tf_token=$(load_tf_token)
+    if [ -z "$tf_token" ]; then
+        print_error "Not authenticated with Terraform Cloud"
+        return 1
+    fi
+
+    print_info "Fetching workspaces for organization '$TF_ORGANIZATION'..."
+
+    local response=$(curl -s \
+        -H "Authorization: Bearer $tf_token" \
+        "https://app.terraform.io/api/v2/organizations/$TF_ORGANIZATION/workspaces")
+
+    if command -v jq &> /dev/null; then
+        echo "$response" | jq -r '.data[].attributes.name' 2>/dev/null | while read -r ws; do
+            echo "  - $ws"
+        done
+    else
+        echo "$response" | grep -o '"name":"[^"]*"' | cut -d'"' -f4 | while read -r ws; do
+            echo "  - $ws"
+        done
+    fi
+}
+
+# Function to show help
+function help() {
+    echo -e "${YELLOW}Terraform Cloud Management${NC}"
+    echo ""
+    echo "Usage: $0 [command]"
+    echo ""
+    echo "Commands:"
+    echo "  init         - Initialize Terraform Cloud organization and all workspaces"
+    echo "  org          - Create Terraform Cloud organization only"
+    echo "  status       - Show current status"
+    echo "  list         - List all workspaces"
+    echo "  help         - Show this help message"
+    echo ""
+    echo "Configuration:"
+    echo "  Workspaces are created based on STAGES in .env.project"
+    echo "  Current stages: ${WORKSPACE_STAGES[*]}"
+    echo ""
+    echo "Authentication:"
+    echo "  Uses token from 1Password vault or ~/.terraform.d/credentials.tfrc.json"
+    echo ""
+    echo "Examples:"
+    echo "  $0 init                    # Full initialization"
+    echo "  $0 status                  # Show status"
+    echo "  $0 list                    # List all workspaces"
+}
+
+# Process command
+CMD=${1:-help}
+shift || true
+
+case "$CMD" in
+    init)
+        init
+        ;;
+    org)
+        create_org
+        ;;
+    status)
+        status
+        ;;
+    list)
+        list_workspaces
+        ;;
+    help)
+        help
+        ;;
+    *)
+        echo -e "${RED}Unknown command: $CMD${NC}"
+        help
+        exit 1
+        ;;
+esac

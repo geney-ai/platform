@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# iac - Infrastructure as Code Management Script
+# Runs terraform commands with 1Password vault secret injection
+
+set -e
+
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
+
+# Source the main project utils
+source "$PROJECT_ROOT/bin/utils.sh"
+
+# Source the project config using our helper
+source_project_config || exit 1
+
+# Set IAC root directory
+IAC_ROOT="$PROJECT_ROOT/iac"
+
+# Function to show usage
+usage() {
+    echo -e "${YELLOW}Infrastructure as Code Management${NC}"
+    echo ""
+    echo "Usage: $0 <stage> <terraform-command> [args]"
+    echo ""
+    echo "Available stages:"
+    if [ -d "$IAC_ROOT/stages" ]; then
+        for stage_dir in "$IAC_ROOT/stages"/*; do
+            if [ -d "$stage_dir" ]; then
+                echo "  - $(basename "$stage_dir")"
+            fi
+        done
+    elif [ -d "$IAC_ROOT/envs" ]; then
+        echo "  (Note: Run 'make tf-cloud init' to migrate envs/ to stages/)"
+        for env_dir in "$IAC_ROOT/envs"/*; do
+            if [ -d "$env_dir" ]; then
+                echo "  - $(basename "$env_dir")"
+            fi
+        done
+    fi
+    echo ""
+    echo "Examples:"
+    echo "  $0 production plan           # Plan production changes"
+    echo "  $0 production apply          # Apply production changes"
+    echo "  $0 registry plan             # Plan registry changes"
+    echo "  $0 production destroy        # Destroy production (careful!)"
+    echo ""
+    echo "This script runs terraform with secrets from 1Password vault"
+    exit 1
+}
+
+# Check arguments
+if [[ $# -lt 2 ]]; then
+    usage
+fi
+
+STAGE_NAME="$1"
+shift
+
+# Check for stages directory first, fall back to envs for compatibility
+STAGE_DIR=""
+if [ -d "$IAC_ROOT/stages/$STAGE_NAME" ]; then
+    STAGE_DIR="$IAC_ROOT/stages/$STAGE_NAME"
+elif [ -d "$IAC_ROOT/envs/$STAGE_NAME" ]; then
+    STAGE_DIR="$IAC_ROOT/envs/$STAGE_NAME"
+    print_info "Note: Using legacy envs/ directory. Run 'make tf-cloud init' to migrate to stages/"
+else
+    print_error "Stage directory not found: $STAGE_NAME"
+    echo "Searched in:"
+    echo "  - $IAC_ROOT/stages/$STAGE_NAME"
+    echo "  - $IAC_ROOT/envs/$STAGE_NAME"
+    usage
+fi
+
+# Run terraform using the vault script with proper stage
+export STAGE="$STAGE_NAME"
+source "$PROJECT_ROOT/bin/vault"
+
+print_info "Running terraform in $STAGE_DIR with vault secrets..."
+run_with_vault -- sh -c "cd '$STAGE_DIR' && terraform $*"

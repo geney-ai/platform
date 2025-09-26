@@ -2,8 +2,11 @@
 
 # Linting script for the project using ruff
 
-# Source shared utilities
-source "$(dirname "$0")/utils.sh"
+# Get project root (going up from py/bin/ci to root)
+PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../../.." && pwd )"
+
+# Source shared utilities from project root
+source "$PROJECT_ROOT/bin/utils.sh"
 
 # Parse arguments
 FIX_MODE=false
@@ -15,13 +18,13 @@ if $FIX_MODE; then
     print_header "Running Ruff with Auto-fix"
     
     echo "Fixing linting issues..."
-    uvx ruff check "$PROJECT_ROOT/src" "$PROJECT_ROOT/tests" --fix
+    uvx ruff check "$PROJECT_ROOT/py/src" "$PROJECT_ROOT/py/tests" --fix
     check_result "Ruff auto-fix"
 else
     print_header "Running Ruff Linter"
     
     echo "Checking for linting issues..."
-    uvx ruff check "$PROJECT_ROOT/src" "$PROJECT_ROOT/tests"
+    uvx ruff check "$PROJECT_ROOT/py/src" "$PROJECT_ROOT/py/tests"
     check_result "Ruff check"
 fi
 

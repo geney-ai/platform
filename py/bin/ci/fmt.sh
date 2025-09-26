@@ -2,8 +2,11 @@
 
 # Formatting script for the project using black
 
-# Source shared utilities
-source "$(dirname "$0")/utils.sh"
+# Get project root (going up from py/bin/ci to root)
+PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../../.." && pwd )"
+
+# Source shared utilities from project root
+source "$PROJECT_ROOT/bin/utils.sh"
 
 # Parse arguments
 CHECK_ONLY=false
@@ -15,13 +18,13 @@ if $CHECK_ONLY; then
     print_header "Running Formatters in Check Mode"
     
     echo "Checking black formatting..."
-    uvx black "$PROJECT_ROOT/src" "$PROJECT_ROOT/tests" --line-length 88 --check
+    uvx black "$PROJECT_ROOT/py/src" "$PROJECT_ROOT/py/tests" --line-length 88 --check
     check_result "Black check"
 else
     print_header "Running Code Formatters"
     
     echo "Formatting with black..."
-    uvx black "$PROJECT_ROOT/src" "$PROJECT_ROOT/tests" --line-length 88
+    uvx black "$PROJECT_ROOT/py/src" "$PROJECT_ROOT/py/tests" --line-length 88
     check_result "Black format"
 fi
 
