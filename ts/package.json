@@ -12,7 +12,7 @@
     "fmt": "turbo run fmt",
     "fmt:check": "turbo run fmt:check",
     "check-types": "turbo run check-types",
-    "clean": "turbo run clean"
+    "clean": "turbo run clean && rm -rf node_modules .turbo"
   },
   "devDependencies": {
     "prettier": "^3.5.3",

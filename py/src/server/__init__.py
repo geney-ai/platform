@@ -61,14 +61,14 @@ def create_app(app_state: AppState) -> FastAPI:
         print(
             f"Exception handler called: {exc.status_code} - {request.url.path}"
         )  # Debug
-        if request.url.path.startswith("/app"):
-            if exc.status_code in [
-                status.HTTP_401_UNAUTHORIZED,
-                status.HTTP_403_FORBIDDEN,
-            ]:
-                return RedirectResponse(
-                    url="/app/login", status_code=status.HTTP_302_FOUND
-                )
+        # Redirect unauthorized users to login for protected pages
+        if exc.status_code in [
+            status.HTTP_401_UNAUTHORIZED,
+            status.HTTP_403_FORBIDDEN,
+        ]:
+            # Don't redirect if already on login page
+            if not request.url.path.startswith("/login"):
+                return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
         return JSONResponse(
             status_code=exc.status_code,
             content={"detail": exc.detail},

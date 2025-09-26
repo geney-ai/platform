@@ -58,7 +58,6 @@ class Secrets:
                 f"SERVICE_SECRET environment variable must be at least {MIN_SECRET_LENGTH} characters long",
             )
 
-
         # google sso credentials
         self.google_client_id = empty_to_none("GOOGLE_O_AUTH_CLIENT_ID")
         self.google_client_secret = empty_to_none("GOOGLE_O_AUTH_CLIENT_SECRET")
@@ -76,7 +75,6 @@ class Secrets:
             )
 
 
-
 # TODO: getopt() for cmd line arguments
 class Config:
     # whether we're in dev mode -- controls
@@ -89,6 +87,9 @@ class Config:
     listen_address: str
     listen_port: int
     auth_redirect_uri: str
+
+    # marketing site URL (for linking back from login page)
+    marketing_site_url: str
 
     # database
     # TODO (amiller68): ... what do we use this for?
@@ -103,7 +104,7 @@ class Config:
     secrets: Secrets
 
     def __str__(self):
-        return f"Config(dev_mode={self.dev_mode}, host_name={self.host_name}, listen_address={self.listen_address}, listen_port={self.listen_port}, auth_redirect_uri={self.auth_redirect_uri}, postgres_url={self.postgres_url}, postgres_async_url={self.postgres_async_url}, debug={self.debug}, log_path={self.log_path}, secrets={self.secrets})"
+        return f"Config(dev_mode={self.dev_mode}, host_name={self.host_name}, listen_address={self.listen_address}, listen_port={self.listen_port}, auth_redirect_uri={self.auth_redirect_uri}, marketing_site_url={self.marketing_site_url}, postgres_url={self.postgres_url}, postgres_async_url={self.postgres_async_url}, debug={self.debug}, log_path={self.log_path}, secrets={self.secrets})"
 
     def __init__(self):
         # Load the environment variables
@@ -116,6 +117,11 @@ class Config:
         self.listen_port = int(os.getenv("LISTEN_PORT", 8000))
         self.auth_redirect_uri = os.getenv(
             "AUTH_REDIRECT_URI", f"{self.host_name}/auth/google/callback"
+        )
+
+        # Marketing site URL with safe default
+        self.marketing_site_url = os.getenv(
+            "MARKETING_SITE_URL", "http://localhost:3000"
         )
 
         # TODO (amiller68): is this the correct way to handle postgres urls?

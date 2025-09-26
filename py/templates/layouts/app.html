@@ -8,14 +8,14 @@
             <!-- Logo -->
             <div class="flex items-center mb-8">
                 <img src="/static/icon.svg" alt="Icon" class="size-8 mr-3">
-                <span class="text-xl font-bold">generic</span>
+                <span class="text-xl font-bold">Geney</span>
             </div>
             
             <!-- Navigation -->
             <ul class="uk-nav-default" data-uk-nav>
                 <li id="nav-dashboard">
-                    <a href="/app/dashboard" 
-                       hx-get="/app/dashboard" 
+                    <a href="/dashboard"
+                       hx-get="/dashboard" 
                        hx-target="#main-content" 
                        hx-push-url="true"
                        class="flex items-center">
@@ -24,19 +24,19 @@
                     </a>
                 </li>
                 <li id="nav-items" class="uk-parent">
-                    <a href="/app/items" class="flex items-center">
+                    <a href="/items" class="flex items-center">
                         <uk-icon icon="file-text" class="mr-3"></uk-icon>
                         Items 
                         <span data-uk-nav-parent-icon></span>
                     </a>
                     <ul class="uk-nav-sub">
-                        <li><a href="/app/items/new">New Item</a></li>
-                        <li><a href="/app/items/list">All Items</a></li>
+                        <li><a href="/items/new">New Item</a></li>
+                        <li><a href="/items/list">All Items</a></li>
                     </ul>
                 </li>
                 <li id="nav-settings">
-                    <a href="/app/settings"
-                       hx-get="/app/settings"
+                    <a href="/settings"
+                       hx-get="/settings"
                        hx-target="#main-content"
                        hx-push-url="true"
                        class="flex items-center">
@@ -91,11 +91,11 @@
     });
     
     // Set active nav item based on path
-    if (path.startsWith('/app/dashboard')) {
+    if (path.startsWith('/dashboard')) {
       document.getElementById('nav-dashboard')?.classList.add('uk-active');
-    } else if (path.startsWith('/app/items')) {
+    } else if (path.startsWith('/items')) {
       document.getElementById('nav-items')?.classList.add('uk-active');
-    } else if (path.startsWith('/app/settings')) {
+    } else if (path.startsWith('/settings')) {
       document.getElementById('nav-settings')?.classList.add('uk-active');
     }
   }

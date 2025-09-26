@@ -3,19 +3,7 @@ help: ## Show this help message
 	@echo 'Usage: make [target]'
 	@echo ''
 	@echo 'Available targets:'
-	@echo '  dev: Run development server'
-	@echo '  install: Install dependencies'
-	@echo '  build: Build the project'
-	@echo '  test: Run tests'
-	@echo '  lint: Run linter (ruff)'
-	@echo '  fmt: Format code (black)'
-	@echo '  fmt-check: Check code formatting'
-	@echo '  types: Check types (mypy/pyright)'
-	@echo '  check: Run all checks'
-	@echo '  docker-build: Build Docker image'
-	@echo '  clean: Clean build artifacts'
-	@echo '  tailwind: Build Tailwind CSS'
-	@echo '  tailwind-watch: Watch Tailwind CSS'
+	@awk 'BEGIN {FS = ":.*##"; printf "\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  %-20s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 
 .PHONY: dev
 dev: ## Run development server
@@ -71,9 +59,27 @@ clean: ## Clean build artifacts
 	@find . -type f -name ".venv" -delete
 
 .PHONY: tailwind
-tailwind: ## Build Tailwind CSS
+tailwind: ## Build Tailwind CSS (deprecated - use 'make styles')
 	@./bin/tailwind.sh
 
 .PHONY: tailwind-watch
-tailwind-watch: ## Watch Tailwind CSS
+tailwind-watch: ## Watch Tailwind CSS (deprecated - use 'make styles-watch')
 	@./bin/tailwind.sh -w
+
+.PHONY: styles
+styles: ## Build styles with Tailwind CSS and copy assets
+	@echo "Building Python styles..."
+	@# Copy branding assets
+	@mkdir -p static
+	@cp ../branding/assets/favicon.ico static/favicon.ico
+	@cp ../branding/assets/favicon.png static/favicon.png
+	@cp ../branding/assets/icon.png static/icon.png
+	@cp ../branding/assets/icon.svg static/icon.svg
+	@npx tailwindcss -i ./styles/main.css -o ./static/css/main.css --minify
+	@echo "✓ Styles built"
+	@echo "✓ Assets copied"
+
+.PHONY: styles-watch
+styles-watch: ## Watch and rebuild styles on changes
+	@echo "Watching Python styles..."
+	@npx tailwindcss -i ./styles/main.css -o ./static/css/main.css --watch

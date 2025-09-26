@@ -1,0 +1,31 @@
+{
+  "name": "@krondor/branding",
+  "version": "1.0.0",
+  "description": "Shared branding and design system for Krondor platform",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./tailwind-preset": "./tailwind/preset.js",
+    "./tokens": "./core/tokens.json",
+    "./styles/*": "./styles/*"
+  },
+  "scripts": {
+    "generate:python": "node build/generate-python.js",
+    "generate:all": "npm run generate:python",
+    "watch": "nodemon --watch core --watch tailwind --watch styles --exec npm run generate:all"
+  },
+  "keywords": [
+    "branding",
+    "design-system",
+    "tailwind",
+    "theme"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  },
+  "peerDependencies": {
+    "tailwindcss": "^3.0.0"
+  }
+}

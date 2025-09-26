@@ -10,7 +10,7 @@ router = APIRouter()
 
 @router.get("/logout")
 async def logout():
-    response = RedirectResponse(url="/app/login")
+    response = RedirectResponse(url="/login")
     response.delete_cookie("session")
     return response
 
@@ -35,6 +35,6 @@ async def google_callback(request: Request, state=Depends(app_state)):
         algorithm="HS256",
     )
 
-    response = RedirectResponse(url="/app")
+    response = RedirectResponse(url="/dashboard")
     response.set_cookie(key="session", value=token, expires=expiration)
     return response

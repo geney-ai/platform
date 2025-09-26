@@ -1,8 +1,9 @@
 <div class="flex min-h-screen items-center justify-center p-4 md:p-10">
     <div class="w-full max-w-sm">
         <div class="mb-6 flex justify-center">
-            <a href="/">
-                <img src="/static/icon.svg" alt="generic" class="h-12" />
+            <a href="{{ marketing_site_url }}" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <img src="/static/icon.svg" alt="Geney" class="h-12" />
+                <span class="text-2xl font-bold">Geney</span>
             </a>
         </div>
         <div class="space-y-1.5 text-center">
@@ -35,6 +36,12 @@
                 By clicking continue, you agree to our
                 <a class="uk-link" href="#">Terms of Service</a> and
                 <a class="uk-link" href="#">Privacy Policy</a>.
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{{ marketing_site_url }}" class="uk-link text-sm">
+                    ← Back to home
+                </a>
             </div>
         </div>
     </div>
